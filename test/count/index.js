@@ -25,7 +25,7 @@ test('count', function(t){
 
   var totalLines = 0;
   mapreduce.on('start', function(tiles){
-    t.ok('mapreduce started')
+    t.ok('mapreduce started');
     t.true(tiles.length > 0);
     tiles.forEach(function(tile) {
       t.equal(tile[0].length, 3);
@@ -37,7 +37,7 @@ test('count', function(t){
   });
 
   mapreduce.on('end', function(error){
-    t.ok('mapreduce completed')
+    t.ok('mapreduce completed');
     t.end();
   });
 

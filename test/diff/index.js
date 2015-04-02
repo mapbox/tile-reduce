@@ -30,7 +30,11 @@ test('diff', function(t){
 
   var geojson = turf.featurecollection([]);
   mapreduce.on('start', function(tiles){
-
+    t.ok('mapreduce started');
+    t.true(tiles.length > 0);
+    tiles.forEach(function(tile) {
+      t.equal(tile[0].length, 3);
+    });
   });
 
   mapreduce.on('reduce', function(result, tile){
@@ -48,6 +52,7 @@ test('diff', function(t){
     t.true(allLines, 'all diff features were lines');
 
     fs.writeFileSync(__dirname+'/out.geojson');
+    t.ok('mapreduce completed');
 
     t.end();
   });
