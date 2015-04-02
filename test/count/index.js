@@ -1,5 +1,5 @@
 var test = require('tape');
-var mapreduce = new require('vt-mapreduce')();
+var mapreduce = new require('../../')();
 var count = require('./count.js');
 var turf = require('turf');
 

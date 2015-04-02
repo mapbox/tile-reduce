@@ -4,7 +4,7 @@
   "description": "vector tile mapreduce",
   "main": "index.js",
   "directories": {
-    "test": "test"
+    "test": "node test/test.js"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/mapbox/vt-mapreduce",
   "devDependencies": {
+    "glob": "^5.0.3",
     "tape": "^3.5.0",
     "turf": "^2.0.2"
   },
