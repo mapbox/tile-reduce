@@ -1,6 +1,7 @@
-var test = require('tape')
+var test = require('tape');
 var mapreduce = new require('vt-mapreduce')();
 var diff = require('./diff.js');
+var turf = require('turf');
 
 test('diff', function(t){
   var bbox = [-77.05810546875,
@@ -9,32 +10,44 @@ test('diff', function(t){
       38.92282516381189];
 
   var opts = {
-    zoom: 15,
+    zoom: 12,
     tileLayers: [
         {
           name: 'streets',
-          url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf',
-          layers: ['roads', 'tunnel', 'bridge']
+          url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
+          layers: ['roads']
         },
         {
           name: 'tiger',
-          url: 'https://a.tiles.mapbox.com/v4/tiger/{z}/{x}/{y}.vector.pbf',
-          layers: ['routes']
+          url: 'https://b.tiles.mapbox.com/v4/enf.rirltyb9-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
+          layers: ['roads']
         }
       ],
     map: diff
   };
 
+  var geojson = turf.featurecollection([]);
   mapreduce.on('start', function(tiles){
-    console.log('{"type":"FeatureCollection","features":[')
+
   });
 
   mapreduce.on('reduce', function(result, tile){
-    console.log(JSON.stringify(result.features));
+    geojson.features = geojson.features.concat(result.features);
   });
 
   mapreduce.on('end', function(error){
-    console.log(']}');
+    t.true(geojson.features.length > 0, 'diff had features');
+    var allLines = true;
+    geojson.features.forEach(function(line){
+      if(!(line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString')){
+        allLines = false;
+      }
+    });
+    t.true(allLines, 'all diff features were lines');
+
+    fs.writeFileSync(__dirname+'/out.geojson');
+
+    t.end();
   });
 
   mapreduce.on('error', function(error){
@@ -42,6 +55,4 @@ test('diff', function(t){
   });
 
   mapreduce(bbox, opts);
-
-  t.end()
 })

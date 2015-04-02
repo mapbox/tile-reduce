@@ -1,11 +1,11 @@
 var turf = require('turf');
 
 module.exports = function createDiff(tileLayers, opts){
-  var roads = tileLayers.streets.roads;
-  roads.features = roads.features.map(function(road){
+  var streetsRoads = tileLayers.streets.roads;
+  streetsRoads.features = streetsRoads.features.map(function(road){
     return turf.buffer(road, 50, 'feet');
   });
-  var routes = tileLayers.tiger.routes;
-  routes = turf.erase(roads, routes);
-  return routes;
+  var tigerRoads = tileLayers.tiger.roads;
+  tigerRoads = turf.erase(streetsRoads, tigerRoads);
+  return tigerRoads;
 }
