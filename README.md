@@ -7,6 +7,7 @@ mapreduce vector tile processing
 ```js
 var mapreduce = require('vt-mapreduce');
 var diff = require('diff');
+var combine;
 
 var bbox = [
     -80.13702392578125,
@@ -29,7 +30,8 @@ var opts = {
         layers: ['routes']
       }
     ],
-  process: diff
+  map: diff,
+  reduce: combine
 };
 
 var fc = mapreduce(bbox, opts);
