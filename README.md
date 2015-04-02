@@ -28,7 +28,7 @@ var opts = {
   tileLayers: [
       {
         name: 'streets',
-        url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf,
+        url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf',
         layers: ['roads', 'tunnel', 'bridge']
       },
       {
