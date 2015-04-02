@@ -55,4 +55,4 @@ test('diff', function(t){
   });
 
   mapreduce(bbox, opts);
-})
+});
