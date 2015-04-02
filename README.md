@@ -1,6 +1,6 @@
 # vt-mapreduce
 
-mapreduce vector tile processing
+mapreduce vector tile analysis processing
 
 ###index.js
 
@@ -24,16 +24,28 @@ var opts = {
         layers: ['roads', 'tunnel', 'bridge']
       },
       {
-        name: 'traces',
-        url: 'https://a.tiles.mapbox.com/v4/enf.8t2tvs4i/{z}/{x}/{y}.vector.pbf',
+        name: 'tiger',
+        url: 'https://a.tiles.mapbox.com/v4/tiger/{z}/{x}/{y}.vector.pbf',
         layers: ['routes']
       }
     ],
   map: diff
 };
 
+mapreduce.on('start', function(tiles){
+  console.log('Processing '+tiles.length+' tiles');
+});
+
 mapreduce.on('reduce', function(result, tile){
-  console.log(JSON.stringify(result))
+  console.log(JSON.stringify(result));
+});
+
+mapreduce.on('error', function(error){
+  console.log(error);
+});
+
+mapreduce.on('end', function(error){
+  console.log('Complete');
 });
 
 var fc = mapreduce(bbox, opts);
@@ -49,7 +61,7 @@ module.exports = function createDiff(tileLayers, opts){
   roads.features = roads.features.map(function(road){
     return turf.buffer(road, 50, 'feet');
   });
-  var routes = tileLayers.traces.routes;
+  var routes = tileLayers.tiger.routes;
   routes = turf.erase(roads, routes);
   return routes;
 }
