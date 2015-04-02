@@ -5,7 +5,7 @@ mapreduce vector tile processing
 ###index.js
 
 ```js
-var mapreduce = require('vt-mapreduce');
+var mapreduce = new require('vt-mapreduce')();
 var diff = require('diff');
 var combine = require('combine');
 
