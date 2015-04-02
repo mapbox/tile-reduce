@@ -6,6 +6,8 @@ function trace(tileLayers, opts){
   var pixelZoom = 22;
   runkeeper = normalize(flatten(tileLayers.runkeeper.runkeeper));
   streets = normalize(flatten(tileLayers.streets.road));
+  streets.features = streets.features.concat(normalize(flatten(tileLayers.streets.bridge)).features);
+  streets.features = streets.features.concat(normalize(flatten(tileLayers.streets.tunnel)).features);
   var coverOpts = {min_zoom: pixelZoom, max_zoom: pixelZoom};
 
   var streetPixels = {};

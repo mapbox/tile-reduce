@@ -12,17 +12,17 @@ test('diff', function(t){
     ];
 
   var opts = {
-    zoom: 12,
+    zoom: 15,
     tileLayers: [
         {
           name: 'streets',
           url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
-          layers: ['roads']
+          layers: ['road', 'bridge', 'tunnel']
         },
         {
-          name: 'tiger',
-          url: 'https://b.tiles.mapbox.com/v4/enf.rirltyb9-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
-          layers: ['roads']
+          name: 'runkeeper',
+          url: 'https://a.tiles.mapbox.com/v4/enf.8t2tvs4i/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
+          layers: ['runkeeper']
         }
       ],
     map: diff
@@ -42,14 +42,14 @@ test('diff', function(t){
   });
 
   mapreduce.on('end', function(error){
-    t.true(geojson.features.length > 0, 'diff had features');
-    var allLines = true;
-    geojson.features.forEach(function(line){
-      if(!(line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString')){
-        allLines = false;
+    t.true(geojson.features.length > 0, 'trace had features');
+    var allPoints = true;
+    geojson.features.forEach(function(pt){
+      if(!(pt.geometry.type === 'Point')){
+        allPoints = false;
       }
     });
-    t.true(allLines, 'all diff features were lines');
+    t.true(allPoints, 'all trace features were points');
 
     fs.writeFileSync(__dirname+'/out.geojson');
     t.ok('mapreduce completed');
