@@ -51,7 +51,7 @@ test('diff', function(t){
     });
     t.true(allLines, 'all diff features were lines');
 
-    fs.writeFileSync(__dirname+'/out.geojson');
+    fs.writeFileSync(__dirname+'/out.geojson', JSON.stringify(geojson));
     t.ok('mapreduce completed');
 
     t.end();

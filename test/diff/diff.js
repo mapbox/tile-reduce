@@ -1,6 +1,6 @@
 var turf = require('turf');
 
-module.exports = function createDiff(tileLayers, opts){
+module.exports = function(tileLayers, opts){
   var streetsRoads = tileLayers.streets.roads;
   streetsRoads.features = streetsRoads.features.map(function(road){
     return turf.buffer(road, 50, 'feet');

@@ -1,9 +1,9 @@
 var test = require('tape');
 var mapreduce = new require('../../')();
-var count = require('./count.js');
+var diff = require('./diff.js');
 var turf = require('turf');
 
-test('count', function(t){
+test('diff', function(t){
   var bbox = [
     -77.05810546875,
     38.913475954379756,
@@ -12,18 +12,18 @@ test('count', function(t){
     ];
 
   var opts = {
-    zoom: 12,
+    zoom: 15,
     tileLayers: [
         {
           name: 'streets',
           url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
-          layers: ['road']
+          layers: ['road', 'bridge', 'tunnel']
         }
       ],
-    map: count
+    map: diff
   };
 
-  var totalLines = 0;
+  var geojson = turf.featurecollection([]);
   mapreduce.on('start', function(tiles){
     t.ok('mapreduce started');
     t.true(tiles.length > 0);
@@ -33,12 +33,22 @@ test('count', function(t){
   });
 
   mapreduce.on('reduce', function(result, tile){
-    totalLines += result;
+    geojson.features = geojson.features.concat(result.features);
   });
 
   mapreduce.on('end', function(error){
-    t.true(totalLines > 20, 'should be at least 20 lines')
+    t.true(geojson.features.length > 0, 'trace had features');
+    var allPoints = true;
+    geojson.features.forEach(function(pt){
+      if(!(pt.geometry.type === 'Point')){
+        allPoints = false;
+      }
+    });
+    t.true(allPoints, 'all trace features were points');
+
+    fs.writeFileSync(__dirname+'/out.geojson', JSON.stringify(geojson));
     t.ok('mapreduce completed');
+
     t.end();
   });
 

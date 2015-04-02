@@ -2,7 +2,7 @@ var turf = require('turf');
 var cover = require('tile-cover');
 var tilebelt = require('tilebelt');
 
-function trace(tileLayers, opts){
+module.exports = function trace(tileLayers, opts){
   var pixelZoom = 22;
   runkeeper = normalize(flatten(tileLayers.runkeeper.runkeeper));
   streets = normalize(flatten(tileLayers.streets.road));
