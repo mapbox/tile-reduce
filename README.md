@@ -2,6 +2,12 @@
 
 mapreduce vector tile analysis processing
 
+###run
+
+```sh
+node index.js | tippecanoe -o diff.mbtiles
+```
+
 ###index.js
 
 ```js
@@ -33,22 +39,22 @@ var opts = {
 };
 
 mapreduce.on('start', function(tiles){
-  console.log('Processing '+tiles.length+' tiles');
+  console.log('{"type":"FeatureCollection","features":[')
 });
 
 mapreduce.on('reduce', function(result, tile){
-  console.log(JSON.stringify(result));
-});
-
-mapreduce.on('error', function(error){
-  console.log(error);
+  console.log(JSON.stringify(result.features));
 });
 
 mapreduce.on('end', function(error){
-  console.log('Complete');
+  console.log(']}');
 });
 
-var fc = mapreduce(bbox, opts);
+mapreduce.on('error', function(error){
+  throw error;
+});
+
+mapreduce(bbox, opts);
 ```
 
 ###diff.js
