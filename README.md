@@ -2,7 +2,7 @@
 
 mapreduce vector tile processing
 
-###index.jss
+###index.js
 
 ```js
 var mapreduce = require('vt-mapreduce');
