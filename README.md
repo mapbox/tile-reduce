@@ -1,6 +1,6 @@
 # tile-reduce
 
-mapreduce vector tile analysis processing
+[MapReduce](http://en.wikipedia.org/wiki/MapReduce) vector tile analysis & processing
 
 ##example
 
