@@ -66,7 +66,7 @@ tilereduce(bbox, opts);
 ```js
 var turf = require('turf');
 
-module.exports = function createDiff(tileLayers, opts){
+module.exports = function (tileLayers, opts){
   var roads = tileLayers.streets.roads;
   roads.features = roads.features.map(function(road){
     return turf.buffer(road, 50, 'feet');
