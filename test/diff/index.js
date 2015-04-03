@@ -1,5 +1,5 @@
 var test = require('tape');
-var mapreduce = new require('../../')();
+var tilereduce = new require('../../')();
 var diff = require('./diff.js');
 var turf = require('turf');
 
@@ -29,19 +29,19 @@ test('diff', function(t){
   };
 
   var geojson = turf.featurecollection([]);
-  mapreduce.on('start', function(tiles){
-    t.ok('mapreduce started');
+  tilereduce.on('start', function(tiles){
+    t.ok('tilereduce started');
     t.true(tiles.length > 0);
     tiles.forEach(function(tile) {
       t.equal(tile[0].length, 3);
     });
   });
 
-  mapreduce.on('reduce', function(result, tile){
+  tilereduce.on('reduce', function(result, tile){
     geojson.features = geojson.features.concat(result.features);
   });
 
-  mapreduce.on('end', function(error){
+  tilereduce.on('end', function(error){
     t.true(geojson.features.length > 0, 'diff had features');
     var allLines = true;
     geojson.features.forEach(function(line){
@@ -52,14 +52,14 @@ test('diff', function(t){
     t.true(allLines, 'all diff features were lines');
 
     fs.writeFileSync(__dirname+'/out.geojson', JSON.stringify(geojson));
-    t.ok('mapreduce completed');
+    t.ok('tilereduce completed');
 
     t.end();
   });
 
-  mapreduce.on('error', function(error){
+  tilereduce.on('error', function(error){
     throw error;
   });
 
-  mapreduce(bbox, opts);
+  tilereduce(bbox, opts);
 });
