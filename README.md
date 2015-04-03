@@ -1,4 +1,4 @@
-# vt-reduce
+# tile-reduce
 
 [MapReduce](http://en.wikipedia.org/wiki/MapReduce) vector tile analysis & processing
 
