@@ -4,25 +4,26 @@ var turf = require('turf');
 var fork = require('child_process').fork;
 var cpus = require('os').cpus().length;
 
-var workers = []
-var jobopts
 module.exports = function (coverArea, opts){
-  jobopts = opts
-  var workersCompleted = 0;
+  var workers = [];
+  var tilesCompleted = 0;
   var ee = new EventEmitter();
-  if(coverArea instanceof Array) coverArea = turf.bboxPolygon(coverArea)
+  if(coverArea instanceof Array) coverArea = turf.bboxPolygon(coverArea);
   var tiles = cover.tiles(coverArea.geometry, {min_zoom: opts.zoom, max_zoom: opts.zoom});
+
+  setTimeout(function(){
+    ee.emit('tiles', tiles);
+  }, 0);
 
   for (var i = 0; i < cpus; i++) {
     workers[i] = workers[i] || fork(__dirname + '/worker.js');
-
     workers[i].on('message', function(message) {
       ee.emit('reduce', message);
-    });
-
-    workers[i].on('end', function() {
-      workersCompleted++;
-      if(workersCompleted >= cpus){
+      tilesCompleted++;
+      if(tilesCompleted >= tiles.length){
+        while (workers.length) {
+          workers.shift().kill('SIGHUP');
+        }
         ee.emit('end');
       }
     });
@@ -33,21 +34,20 @@ module.exports = function (coverArea, opts){
   }
 
   ee.run = function () {
-    var chunks = []
+    var chunks = [];
     for (var i = 0; i < cpus; i++) {
       chunks.push([]);
     }
     tiles.forEach(function(tile, i){
       chunks[i % cpus].push(tile);
-    })
+    });
     for (var i = 0; i < cpus; i++) {
       workers[i].send({
         tiles: chunks[i % cpus],
-        opts: jobopts
+        opts: opts
       });
     }
   }
-
 
   return ee;
 }

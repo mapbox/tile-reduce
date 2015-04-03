@@ -25,11 +25,21 @@ test('count', function(t){
 
   var totalLines = 0;
   var tilereduce = TileReduce(bbox, opts);
+
   tilereduce.on('start', function(tiles){
-    t.ok('tilereduce started');
+    console.log('STARTED')
+    t.pass('tilereduce started');
     t.true(tiles.length > 0);
     tiles.forEach(function(tile) {
       t.equal(tile[0].length, 3);
+    });
+  });
+
+  tilereduce.on('tiles', function(tiles){
+    t.equal(tiles.length, 12)
+    t.true(tiles.length > 0);
+    tiles.forEach(function(tile) {
+      t.equal(tile.length, 3);
     });
   });
 
@@ -38,8 +48,8 @@ test('count', function(t){
   });
 
   tilereduce.on('end', function(error){
-    t.true(totalLines > 20, 'should be at least 20 lines')
-    t.ok('tilereduce completed');
+    t.equal(totalLines, 26707, 'should be 26707 lines')
+    t.pass('tilereduce completed');
     t.end();
   });
 

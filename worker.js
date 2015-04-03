@@ -5,7 +5,6 @@ var turf = require('turf');
 var queue = require('queue-async');
 
 process.on('message', function(data) {
-  //console.log(require(data.opts.map)(res))
   data.tiles.forEach(function(tile){
     var layerCollection = {};
     var q = queue(4);
@@ -13,11 +12,15 @@ process.on('message', function(data) {
       q.defer(getVectorTile, tile, tileLayer)
     });
     q.awaitAll(function(err, res){
-      data.opts.tileLayers.forEach(function(tileLayer){
-        
+      res.forEach(function(item){
+        item.layers.forEach(function(layer){
+          if(!layerCollection[item.name]) layerCollection[item.name] = {};
+          layerCollection[item.name][layer] = item[layer]
+        });
       });
-      process.send()
-    })
+
+      process.send(require(data.opts.map)(layerCollection));
+    });
   });
 });
 
