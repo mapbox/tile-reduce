@@ -1,4 +1,4 @@
-# vt-mapreduce
+# tile-reduce
 
 mapreduce vector tile analysis processing
 
@@ -13,7 +13,7 @@ node index.js | tippecanoe -o diff.mbtiles
 ###index.js
 
 ```js
-var mapreduce = new require('vt-mapreduce')();
+var tilereduce = new require('tile-reduce')();
 var diff = require('diff');
 
 var bbox = [
@@ -40,23 +40,23 @@ var opts = {
   map: diff
 };
 
-mapreduce.on('start', function(tiles){
+tilereduce.on('start', function(tiles){
   console.log('{"type":"FeatureCollection","features":[')
 });
 
-mapreduce.on('reduce', function(result, tile){
+tilereduce.on('reduce', function(result, tile){
   console.log(JSON.stringify(result.features));
 });
 
-mapreduce.on('end', function(error){
+tilereduce.on('end', function(error){
   console.log(']}');
 });
 
-mapreduce.on('error', function(error){
+tilereduce.on('error', function(error){
   throw error;
 });
 
-mapreduce(bbox, opts);
+tilereduce(bbox, opts);
 ```
 
 ###diff.js
