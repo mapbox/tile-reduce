@@ -4,17 +4,17 @@ var request = require('request');
 var turf = require('turf');
 var queue = require('queue-async');
 
-module.exports = function(tiles, opts){
-  tiles.forEach(function(tile){
+process.on('message', function(data) {
+  data.tiles.forEach(function(tile){
     var q = queue(4);
-    opts.tileLayers.forEach(function(tileLayer){
-      q.defer(getVectorTile, {opts.zoom, tileLayer});
+    data.opts.tileLayers.forEach(function(tileLayer){
+      q.defer(getVectorTile, {data.opts.zoom, tileLayer});
     });
     q.awaitAll(function(err, res){
-      return opts.reduce(res);
+      process.send(data.opts.reduce(res));
     });
   });
-}
+});
 
 function getVectorTile(tile, layer, url, done){
   var url = url.split('{x}').join(tile[0]);

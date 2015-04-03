@@ -12,9 +12,7 @@ module.exports = function(coverArea, opts){
     workers[i].send({
       tiles: 
     });
-    workers[i].removeAllListeners('exit');
-    workers[i].on('exit', exit);
-    workers[i].removeAllListeners('message');
+
     workers[i].on('message', function(message) {
 
     });
