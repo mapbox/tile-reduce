@@ -33,4 +33,5 @@ module.exports = function(coverArea, opts){
       ev.emit('error', err);
     });
   }
+  return ev;
 }
