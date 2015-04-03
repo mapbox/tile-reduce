@@ -1,6 +1,6 @@
 # tile-reduce
 
-[MapReduce](http://en.wikipedia.org/wiki/MapReduce) vector tile analysis & processing
+[MapReduce](http://en.wikipedia.org/wiki/MapReduce) geoprocessing across tiles
 
 ##example
 
