@@ -1,14 +1,14 @@
 var test = require('tape');
-var tilereduce = new require('../../')();
+var TileReduce = require('../../');
 var count = require('./count.js');
 var turf = require('turf');
 
 test('count', function(t){
   var bbox = [
-    -77.05810546875,
-    38.913475954379756,
-    -77.04608917236328,
-    38.92282516381189
+    -77.16350555419922,
+    38.81135594620186,
+    -76.9379425048828,
+    38.965815660189016
     ];
 
   var opts = {
@@ -20,10 +20,11 @@ test('count', function(t){
           layers: ['road']
         }
       ],
-    map: count
+    map: __dirname+'/count.js'
   };
 
   var totalLines = 0;
+  var tilereduce = TileReduce(bbox, opts);
   tilereduce.on('start', function(tiles){
     t.ok('tilereduce started');
     t.true(tiles.length > 0);
@@ -46,5 +47,5 @@ test('count', function(t){
     throw error;
   });
 
-  tilereduce(bbox, opts);
+  tilereduce.run();
 });

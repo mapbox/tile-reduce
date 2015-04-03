@@ -5,19 +5,24 @@ var turf = require('turf');
 var queue = require('queue-async');
 
 process.on('message', function(data) {
+  //console.log(require(data.opts.map)(res))
   data.tiles.forEach(function(tile){
+    var layerCollection = {};
     var q = queue(4);
     data.opts.tileLayers.forEach(function(tileLayer){
-      q.defer(getVectorTile, {data.opts.zoom, tileLayer});
+      q.defer(getVectorTile, tile, tileLayer)
     });
     q.awaitAll(function(err, res){
-      process.send(data.opts.reduce(res));
-    });
+      data.opts.tileLayers.forEach(function(tileLayer){
+        
+      });
+      process.send()
+    })
   });
 });
 
-function getVectorTile(tile, layer, url, done){
-  var url = url.split('{x}').join(tile[0]);
+function getVectorTile(tile, tileLayer, done){
+  var url = tileLayer.url.split('{x}').join(tile[0]);
   url = url.split('{y}').join(tile[1]);
   url = url.split('{z}').join(tile[2]);
 
@@ -27,33 +32,18 @@ function getVectorTile(tile, layer, url, done){
     encoding: null
   };
   request(requestOpts, function(err, res, body) {
-    try{
+    try {
       var vt = new VectorTile(new Pbf(new Uint8Array(body)));
-      if(vt.layers[layer]){
+      tileLayer.layers.forEach(function(layer){
         var fc = turf.featurecollection([]);
         for(var i = 0; i < vt.layers[layer].length; i++){
-          fc.features.push(vt.layers[layer].feature(i).toGeoJSON(t[0],t[1],t[2]));
+          fc.features.push(vt.layers[layer].feature(i).toGeoJSON(tile[0],tile[1],tile[2]));
         }
-        done(null, fc);
-      } else done(null, null);
+        tileLayer[layer] = fc;
+      })
+      done(null, tileLayer);
     } catch(e){
-      console.log(e);
-      done(null, null);
+      done(e, null);
     }
   })
-}
-
-function clip(fc, tile) {
-  fc.features = fc.features.map(function(f){
-      try{
-        var clipped = turf.intersect(f, turf.polygon(tilebelt.tileToGeoJSON(tile).coordinates));
-        return clipped;
-      } catch(e){
-        return;
-      }
-    })
-    fc.features = fc.features.filter(function(trace){
-      if(trace) return true;
-    })
-    return fc;
 }

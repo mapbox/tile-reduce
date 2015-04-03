@@ -1,37 +1,54 @@
-var EventEmitter = require('events').EventEmitter;
+var EventEmitter = require("events").EventEmitter;
 var cover = require('tile-cover');
 var turf = require('turf');
 var fork = require('child_process').fork;
 var cpus = require('os').cpus().length;
 
-module.exports = function(coverArea, opts){
+var workers = []
+var jobopts
+module.exports = function (coverArea, opts){
+  jobopts = opts
   var workersCompleted = 0;
-  var ev = new EventEmitter;
+  var ee = new EventEmitter();
   if(coverArea instanceof Array) coverArea = turf.bboxPolygon(coverArea)
   var tiles = cover.tiles(coverArea.geometry, {min_zoom: opts.zoom, max_zoom: opts.zoom});
-  var workers = [];
-  console.log(tiles)
 
   for (var i = 0; i < cpus; i++) {
     workers[i] = workers[i] || fork(__dirname + '/worker.js');
-    workers[i].send({
-      tiles: tiles
-    });
 
     workers[i].on('message', function(message) {
-      ev.emit('reduce', message);
+      ee.emit('reduce', message);
     });
 
     workers[i].on('end', function() {
       workersCompleted++;
       if(workersCompleted >= cpus){
-        ev.emit('reduce', message);
+        ee.emit('end');
       }
     });
 
     workers[i].on('error', function(err) {
-      ev.emit('error', err);
+      ee.emit('error', err);
     });
   }
-  return ev;
+
+  ee.run = function () {
+    var chunks = []
+    for (var i = 0; i < cpus; i++) {
+      chunks.push([]);
+    }
+    tiles.forEach(function(tile, i){
+      chunks[i % cpus].push(tile);
+    })
+    for (var i = 0; i < cpus; i++) {
+      workers[i].send({
+        tiles: chunks[i % cpus],
+        opts: jobopts
+      });
+    }
+  }
+
+
+  return ee;
 }
+
