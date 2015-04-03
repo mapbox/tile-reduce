@@ -1,5 +1,7 @@
 # tile-reduce
 
+*Note: This module is under heavy development and is changing fast*
+
 [MapReduce](http://en.wikipedia.org/wiki/MapReduce) geoprocessing across tiles
 
 ##example
