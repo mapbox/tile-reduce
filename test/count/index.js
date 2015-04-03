@@ -27,15 +27,6 @@ test('count', function(t){
   var tilereduce = TileReduce(bbox, opts);
 
   tilereduce.on('start', function(tiles){
-    console.log('STARTED')
-    t.pass('tilereduce started');
-    t.true(tiles.length > 0);
-    tiles.forEach(function(tile) {
-      t.equal(tile[0].length, 3);
-    });
-  });
-
-  tilereduce.on('tiles', function(tiles){
     t.equal(tiles.length, 12)
     t.true(tiles.length > 0);
     tiles.forEach(function(tile) {

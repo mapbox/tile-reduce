@@ -12,7 +12,7 @@ module.exports = function (coverArea, opts){
   var tiles = cover.tiles(coverArea.geometry, {min_zoom: opts.zoom, max_zoom: opts.zoom});
 
   setTimeout(function(){
-    ee.emit('tiles', tiles);
+    ee.emit('start', tiles);
   }, 0);
 
   for (var i = 0; i < cpus; i++) {
