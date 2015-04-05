@@ -1,14 +1,15 @@
 var test = require('tape');
-var mapreduce = new require('../../')();
-var diff = require('./diff.js');
+var TileReduce = require('../../');
+var diff = require('./trace.js');
 var turf = require('turf');
+var fs = require('fs');
 
 test('diff', function(t){
   var bbox = [
-    -77.05810546875,
-    38.913475954379756,
-    -77.04608917236328,
-    38.92282516381189
+    -79.82786178588867,
+    32.85147083076529,
+    -79.76743698120117,
+    32.899047110321014
     ];
 
   var opts = {
@@ -25,24 +26,27 @@ test('diff', function(t){
           layers: ['runkeeper']
         }
       ],
-    map: diff
+    map: __dirname+'/trace.js'
   };
 
+  var tilereduce = TileReduce(bbox, opts);
+
   var geojson = turf.featurecollection([]);
-  mapreduce.on('start', function(tiles){
-    t.ok('mapreduce started');
-    t.true(tiles.length > 0);
-    tiles.forEach(function(tile) {
-      t.equal(tile[0].length, 3);
-    });
+
+  tilereduce.on('start', function(tiles){
+    t.pass('tilereduce started');
+    t.equal(tiles.length, 49)
+    t.equal(tiles[0].length, 3);
+    t.equal(tiles[1].length, 3);
   });
 
-  mapreduce.on('reduce', function(result, tile){
+  tilereduce.on('reduce', function(result, tile){
     geojson.features = geojson.features.concat(result.features);
   });
 
-  mapreduce.on('end', function(error){
+  tilereduce.on('end', function(error){
     t.true(geojson.features.length > 0, 'trace had features');
+    t.true(geojson.features.length > 10000, 'at least 10k points');
     var allPoints = true;
     geojson.features.forEach(function(pt){
       if(!(pt.geometry.type === 'Point')){
@@ -52,14 +56,14 @@ test('diff', function(t){
     t.true(allPoints, 'all trace features were points');
 
     fs.writeFileSync(__dirname+'/out.geojson', JSON.stringify(geojson));
-    t.ok('mapreduce completed');
+    t.pass('tilereduce completed');
 
     t.end();
   });
 
-  mapreduce.on('error', function(error){
+  tilereduce.on('error', function(error){
     throw error;
   });
 
-  mapreduce(bbox, opts);
+  tilereduce.run();
 });

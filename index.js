@@ -18,7 +18,7 @@ module.exports = function (coverArea, opts){
   for (var i = 0; i < cpus; i++) {
     workers[i] = workers[i] || fork(__dirname + '/worker.js');
     workers[i].on('message', function(message) {
-      ee.emit('reduce', message);
+      if(message) ee.emit('reduce', message);
       tilesCompleted++;
       if(tilesCompleted >= tiles.length){
         while (workers.length) {

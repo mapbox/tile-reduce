@@ -1,11 +1,14 @@
 var turf = require('turf');
 var cover = require('tile-cover');
 var tilebelt = require('tilebelt');
+var normalize = require('geojson-normalize');
+var flatten = require('geojson-flatten');
 
 module.exports = function trace(tileLayers, opts){
   var pixelZoom = 22;
-  runkeeper = normalize(flatten(tileLayers.runkeeper.runkeeper));
-  streets = normalize(flatten(tileLayers.streets.road));
+  var minRuns = 5;
+  var runkeeper = normalize(flatten(tileLayers.runkeeper.runkeeper));
+  var streets = normalize(flatten(tileLayers.streets.road));
   streets.features = streets.features.concat(normalize(flatten(tileLayers.streets.bridge)).features);
   streets.features = streets.features.concat(normalize(flatten(tileLayers.streets.tunnel)).features);
   var coverOpts = {min_zoom: pixelZoom, max_zoom: pixelZoom};
@@ -39,7 +42,6 @@ module.exports = function trace(tileLayers, opts){
     poly.properties.count = runkeeperPixels[hash];
     return poly;
   });
-
   diffFc.features = diffFc.features.filter(function(cell){
     if(cell.properties.count > minRuns) return true;
   });

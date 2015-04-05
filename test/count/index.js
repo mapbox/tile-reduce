@@ -38,7 +38,7 @@ test('count', function(t){
     totalLines += result;
   });
 
-  tilereduce.on('end', function(error){
+  tilereduce.on('end', function(){
     t.equal(totalLines, 26707, 'should be 26707 lines')
     t.pass('tilereduce completed');
     t.end();

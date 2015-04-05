@@ -1,34 +1,37 @@
 var test = require('tape');
-var tilereduce = new require('../../')();
-var diff = require('./diff.js');
+var TileReduce = require('../../');
+var count = require('./disconnect.js');
 var turf = require('turf');
 
-test('diff', function(t){
+test('disconnect', function(t){
   var bbox = [
-    -77.05810546875,
-    38.913475954379756,
-    -77.04608917236328,
-    38.92282516381189
+    -77.16350555419922,
+    38.81135594620186,
+    -76.9379425048828,
+    38.965815660189016
     ];
 
   var opts = {
-    zoom: 15,
+    zoom: 12,
     tileLayers: [
         {
           name: 'streets',
           url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
-          layers: ['road', 'bridge', 'tunnel']
+          layers: ['road']
         }
       ],
-    map: diff
+    map: __dirname+'/disconnect.js'
   };
 
+  var tilereduce = TileReduce(bbox, opts);
+
   var geojson = turf.featurecollection([]);
+
   tilereduce.on('start', function(tiles){
-    t.ok('tilereduce started');
+    t.equal(tiles.length, 12)
     t.true(tiles.length > 0);
     tiles.forEach(function(tile) {
-      t.equal(tile[0].length, 3);
+      t.equal(tile.length, 3);
     });
   });
 
@@ -36,7 +39,7 @@ test('diff', function(t){
     geojson.features = geojson.features.concat(result.features);
   });
 
-  tilereduce.on('end', function(error){
+  tilereduce.on('end', function(){
     t.true(geojson.features.length > 0, 'trace had features');
     var allPoints = true;
     geojson.features.forEach(function(pt){
@@ -56,5 +59,5 @@ test('diff', function(t){
     throw error;
   });
 
-  tilereduce(bbox, opts);
+  tilereduce.run();
 });

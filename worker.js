@@ -12,14 +12,17 @@ process.on('message', function(data) {
       q.defer(getVectorTile, tile, tileLayer)
     });
     q.awaitAll(function(err, res){
-      res.forEach(function(item){
-        item.layers.forEach(function(layer){
-          if(!layerCollection[item.name]) layerCollection[item.name] = {};
-          layerCollection[item.name][layer] = item[layer]
+      if(res){
+        res.forEach(function(item){
+          item.layers.forEach(function(layer){
+            if(!layerCollection[item.name]) layerCollection[item.name] = {};
+            layerCollection[item.name][layer] = item[layer]
+          });
         });
-      });
-
-      process.send(require(data.opts.map)(layerCollection));
+        process.send(require(data.opts.map)(layerCollection));
+      } else {
+        process.send(0);
+      }
     });
   });
 });
@@ -39,11 +42,13 @@ function getVectorTile(tile, tileLayer, done){
       var vt = new VectorTile(new Pbf(new Uint8Array(body)));
       tileLayer.layers.forEach(function(layer){
         var fc = turf.featurecollection([]);
-        for(var i = 0; i < vt.layers[layer].length; i++){
-          fc.features.push(vt.layers[layer].feature(i).toGeoJSON(tile[0],tile[1],tile[2]));
+        if(vt.layers[layer]){
+          for(var i = 0; i < vt.layers[layer].length; i++){
+            fc.features.push(vt.layers[layer].feature(i).toGeoJSON(tile[0],tile[1],tile[2]));
+          }
         }
         tileLayer[layer] = fc;
-      })
+      });
       done(null, tileLayer);
     } catch(e){
       done(e, null);

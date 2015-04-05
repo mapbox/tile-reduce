@@ -1,7 +1,8 @@
-var glob = require("glob");
+var glob = require('glob');
 
 glob(__dirname+'/*', function (err, dirs) {
   dirs.forEach(function(dir){
-    require(dir+'/index.js')();
+    console.log(dir+'/index.js')
+    require(dir+'/index.js');
   });
 });
