@@ -15,14 +15,15 @@ module.exports = function trace(tileLayers, tile){
 
   streets = clip(streets, tile)
   runkeeper = clip(runkeeper, tile)
-//console.log(JSON.stringify(runkeeper))
-  var streetBuff = turf.featurecollection([]);
+
+  var streetsBuff = turf.featurecollection([]);
   streets.features.forEach(function(street){
-    streetBuff.features = streetBuff.features.concat(turf.buffer(street, 0.0189394, 'miles').features);
+    streetsBuff.features = streetsBuff.features.concat(turf.buffer(street, 0.0189394, 'miles').features);
   });
+  streetsBuff = normalize(flatten(streetsBuff));
 
   var streetPixels = {};
-  streetBuff.features.forEach(function(street){
+  streetsBuff.features.forEach(function(street){
     var tiles = cover.tiles(street.geometry, coverOpts);
     for(var i = 0; i < tiles.length; i++){
       streetPixels[tiles[i][0]+'/'+tiles[i][1]+'/'+tiles[i][2]] = true;
@@ -57,7 +58,8 @@ module.exports = function trace(tileLayers, tile){
   return {
     missing: diffFc,
     runkeeper: runkeeper,
-    streets: streets
+    streets: streets,
+    streetsBuff: streetsBuff
   };
 }
 
