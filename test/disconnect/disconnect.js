@@ -4,26 +4,32 @@ var turf = require('turf');
 module.exports = function(tileLayers, opts){
   var minDistance = 50/5280; // 50 ft in miles
   var streetsRoads = tileLayers.streets.road;
-  var caps = turf.featurecollection([]);
   var disconnects = turf.featurecollection([]);
   var preserve = { "motorway" : true, "primary" : true, "secondary" : true, "tertiary" : true, "trunk": true };
-  // get start and end points
+
   streetsRoads.features.forEach(function(line){
     if (preserve[line.properties.type]) {
-      caps.features.push(turf.point(line.geometry.coordinates[0]));
-      caps.features.push(turf.point(line.geometry.coordinates[line.geometry.coordinates.length-1]));
+      // get start and end points
+      var ends = [
+        turf.point(line.geometry.coordinates[0]),
+        turf.point(line.geometry.coordinates[line.geometry.coordinates.length-1])
+      ];
+
+      // check whether each end is close but not exactly on any other line
+      ends.forEach(function(end){
+        streetsRoads.features.forEach(function(line2){
+          if (preserve[line2.properties.type]) {
+            var distance = turf.distance(end, turf.pointOnLine(line2, end));
+
+            if (distance < minDistance && distance != 0) {
+              disconnects.features.push(end);
+            }
+          }
+        });
+      });
     }
   });
   
-  // measure distances between every point
-  caps.features.forEach(function(pt1){
-    caps.features.forEach(function(pt2){
-      if(turf.distance(pt1, pt2, 'miles') < minDistance) {
-        disconnects.features.push(pt1)
-      }
-    });
-  });
-
   // return points where distance is less than 50 feet
   return disconnects;
 }
