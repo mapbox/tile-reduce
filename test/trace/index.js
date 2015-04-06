@@ -31,31 +31,39 @@ test('diff', function(t){
 
   var tilereduce = TileReduce(bbox, opts);
 
-  var geojson = turf.featurecollection([]);
+  var layers = {
+    runkeeper: turf.featurecollection([]),
+    streets: turf.featurecollection([]),
+    missing: turf.featurecollection([]),
+  };
 
   tilereduce.on('start', function(tiles){
     t.pass('tilereduce started');
-    t.equal(tiles.length, 49)
+    t.equal(tiles.length, 49);
     t.equal(tiles[0].length, 3);
     t.equal(tiles[1].length, 3);
   });
 
   tilereduce.on('reduce', function(result, tile){
-    geojson.features = geojson.features.concat(result.features);
+    layers.missing.features = layers.missing.features.concat(result.missing.features);
+    layers.runkeeper.features = layers.runkeeper.features.concat(result.runkeeper.features);
+    layers.streets.features = layers.streets.features.concat(result.streets.features);
   });
 
   tilereduce.on('end', function(error){
-    t.true(geojson.features.length > 0, 'trace had features');
-    t.true(geojson.features.length > 10000, 'at least 10k points');
+    t.true(layers.missing.features.length > 0, 'trace had features');
+    t.true(layers.missing.features.length > 100, 'at least 100 points');
     var allPoints = true;
-    geojson.features.forEach(function(pt){
+    layers.missing.features.forEach(function(pt){
       if(!(pt.geometry.type === 'Point')){
         allPoints = false;
       }
     });
     t.true(allPoints, 'all trace features were points');
 
-    fs.writeFileSync(__dirname+'/out.geojson', JSON.stringify(geojson));
+    fs.writeFileSync(__dirname+'/missing.geojson', JSON.stringify(layers.missing));
+    fs.writeFileSync(__dirname+'/runkeeper.geojson', JSON.stringify(layers.runkeeper));
+    fs.writeFileSync(__dirname+'/streets.geojson', JSON.stringify(layers.streets));
     t.pass('tilereduce completed');
 
     t.end();

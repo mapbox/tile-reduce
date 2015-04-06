@@ -9,17 +9,17 @@ process.on('message', function(data) {
     var layerCollection = {};
     var q = queue(4);
     data.opts.tileLayers.forEach(function(tileLayer){
-      q.defer(getVectorTile, tile, tileLayer)
+      q.defer(getVectorTile, tile, tileLayer);
     });
     q.awaitAll(function(err, res){
       if(res){
         res.forEach(function(item){
           item.layers.forEach(function(layer){
             if(!layerCollection[item.name]) layerCollection[item.name] = {};
-            layerCollection[item.name][layer] = item[layer]
+            layerCollection[item.name][layer] = item[layer];
           });
         });
-        process.send(require(data.opts.map)(layerCollection));
+        process.send(require(data.opts.map)(layerCollection, tile));
       } else {
         process.send(0);
       }
@@ -53,5 +53,5 @@ function getVectorTile(tile, tileLayer, done){
     } catch(e){
       done(e, null);
     }
-  })
+  });
 }

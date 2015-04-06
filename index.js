@@ -47,8 +47,8 @@ module.exports = function (coverArea, opts){
         opts: opts
       });
     }
-  }
+  };
 
   return ee;
-}
+};
 

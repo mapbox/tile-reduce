@@ -4,7 +4,7 @@ var tilebelt = require('tilebelt');
 var normalize = require('geojson-normalize');
 var flatten = require('geojson-flatten');
 
-module.exports = function trace(tileLayers, opts){
+module.exports = function trace(tileLayers, tile){
   var pixelZoom = 22;
   var minRuns = 5;
   var runkeeper = normalize(flatten(tileLayers.runkeeper.runkeeper));
@@ -13,8 +13,16 @@ module.exports = function trace(tileLayers, opts){
   streets.features = streets.features.concat(normalize(flatten(tileLayers.streets.tunnel)).features);
   var coverOpts = {min_zoom: pixelZoom, max_zoom: pixelZoom};
 
-  var streetPixels = {};
+  streets = clip(streets, tile)
+  runkeeper = clip(runkeeper, tile)
+//console.log(JSON.stringify(runkeeper))
+  var streetBuff = turf.featurecollection([]);
   streets.features.forEach(function(street){
+    streetBuff.features = streetBuff.features.concat(turf.buffer(street, 0.0189394, 'miles').features);
+  });
+
+  var streetPixels = {};
+  streetBuff.features.forEach(function(street){
     var tiles = cover.tiles(street.geometry, coverOpts);
     for(var i = 0; i < tiles.length; i++){
       streetPixels[tiles[i][0]+'/'+tiles[i][1]+'/'+tiles[i][2]] = true;
@@ -46,5 +54,24 @@ module.exports = function trace(tileLayers, opts){
     if(cell.properties.count > minRuns) return true;
   });
 
-  return diffFc;
+  return {
+    missing: diffFc,
+    runkeeper: runkeeper,
+    streets: streets
+  };
+}
+
+function clip(lines, tile) {
+  lines.features = lines.features.map(function(line){
+      try {
+        var clipped = turf.intersect(line, turf.polygon(tilebelt.tileToGeoJSON(tile).coordinates));
+        return clipped;
+      } catch(e){
+        return;
+      }
+    });
+    lines.features = lines.features.filter(function(line){
+      if(line) return true;
+    });
+    return lines;
 }
