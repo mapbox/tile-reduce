@@ -2,6 +2,7 @@ var test = require('tape');
 var TileReduce = require('../../');
 var count = require('./disconnect.js');
 var turf = require('turf');
+var fs = require('fs');
 
 test('disconnect', function(t){
   var bbox = [
