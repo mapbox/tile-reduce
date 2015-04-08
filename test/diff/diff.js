@@ -1,23 +1,23 @@
-var turf = require('turf');
+var turf = require('turf'),
+  flatten = require('geojson-flatten');
 
 module.exports = function(tileLayers, opts) {
-  var streetsRoads = tileLayers.streets.road;
-
   var tigerRoads = tileLayers.tiger.tiger20062014;
   tigerRoads.features = tigerRoads.features.map(function(road) {
-    return turf.buffer(road, 1, 'feet');
+    return turf.buffer(road, 1, 'meters').features[0];
   });
   tigerRoads = turf.merge(tigerRoads);
 
+  var streetsRoads = tileLayers.streets.road;
   streetsRoads.features = streetsRoads.features.map(function(road){
-    return turf.buffer(road, 50, 'feet').features[0];
+    return turf.buffer(road, 20, 'meters').features[0];
   });
   streetsRoads = turf.merge(streetsRoads);
 
-  // we want
-  // var erase = turf.erase(tigerRoads, streetsRoads);
-  // but tigerRoads and streetsRoads are both multipolygons
-  // soooo, now what?
+  var erase = turf.erase(flatten(tigerRoads)[0], flatten(streetsRoads)[0]);
+  console.log(JSON.stringify(erase));
+  // why are my results from such a large tile?
+    // osm tile is huge compared to tiger tile
 
   return streetsRoads;
 };
