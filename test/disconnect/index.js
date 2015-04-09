@@ -18,7 +18,7 @@ test('disconnect', function(t){
         {
           name: 'streets',
           url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
-          layers: ['road', 'bridge']
+          layers: ['road', 'bridge', 'tunnel']
         }
       ],
     map: __dirname+'/disconnect.js'
