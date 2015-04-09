@@ -29,7 +29,7 @@ test('disconnect', function(t){
   var geojson = turf.featurecollection([]);
 
   tilereduce.on('start', function(tiles){
-    t.equal(tiles.length, 12)
+    t.equal(tiles.length, 399)
     t.true(tiles.length > 0);
     tiles.forEach(function(tile) {
       t.equal(tile.length, 3);

@@ -14,7 +14,6 @@ module.exports = function(tileLayers, tile){
   // Classes that we don't want to suggest that they should connect to
   var reject_class = { "major_rail" : true, "minor_rail" : true, "aerialway" : true };
 
-try {
   for (layer in tileLayers.streets) {
     var i, j, k;
 
@@ -102,12 +101,14 @@ try {
     }
 
     if (best < minDistance) {
-      cap.point.properties.osm_way = cap.line.properties.osm_id;
+      cap.point.properties.unconnected_way = cap.line.properties.osm_id;
+      cap.point.properties.unconnected_type = cap.line.properties.type;
+      cap.point.properties.unconnected_distance_feet = best * 5280;
+      cap.point.properties.possible_link = bestline.properties.osm_id;
       disconnects.features.push(cap.point);
-      console.log((best * 5280) + " http://www.openstreetmap.org/edit#map=24/" + cap.point.geometry.coordinates[1] + "/" + cap.point.geometry.coordinates[0] + " " + JSON.stringify(cap.point) + " " + JSON.stringify(bestline));
+      // console.log((best * 5280) + " http://www.openstreetmap.org/edit#map=24/" + cap.point.geometry.coordinates[1] + "/" + cap.point.geometry.coordinates[0] + " " + JSON.stringify(cap.point) + " " + JSON.stringify(bestline));
     }
   });
-} catch (e) { console.log(e.stack) }
   
   // return points where distance is less than 50 feet
   return disconnects;
