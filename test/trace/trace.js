@@ -13,16 +13,21 @@ module.exports = function trace(tileLayers, tile){
   streets.features = streets.features.concat(normalize(flatten(tileLayers.streets.tunnel)).features);
   var coverOpts = {min_zoom: pixelZoom, max_zoom: pixelZoom};
 
-  streets = clip(streets, tile)
-  runkeeper = clip(runkeeper, tile)
-//console.log(JSON.stringify(runkeeper))
-  var streetBuff = turf.featurecollection([]);
+  streets = clip(streets, tile);
+  runkeeper = clip(runkeeper, tile);
+  streets = normalize(flatten(streets));
+  runkeeper = normalize(flatten(runkeeper));
+  streets = cleanLines(streets);
+  runkeeper = cleanLines(runkeeper);
+
+  var streetsBuff = turf.featurecollection([]);
   streets.features.forEach(function(street){
-    streetBuff.features = streetBuff.features.concat(turf.buffer(street, 0.0189394, 'miles').features);
+    streetsBuff.features = streetsBuff.features.concat(turf.buffer(street, 0.0189394, 'miles').features);
   });
+  streetsBuff = normalize(flatten(streetsBuff));
 
   var streetPixels = {};
-  streetBuff.features.forEach(function(street){
+  streetsBuff.features.forEach(function(street){
     var tiles = cover.tiles(street.geometry, coverOpts);
     for(var i = 0; i < tiles.length; i++){
       streetPixels[tiles[i][0]+'/'+tiles[i][1]+'/'+tiles[i][2]] = true;
@@ -57,9 +62,10 @@ module.exports = function trace(tileLayers, tile){
   return {
     missing: diffFc,
     runkeeper: runkeeper,
-    streets: streets
+    streets: streets,
+    streetsBuff: streetsBuff
   };
-}
+};
 
 function clip(lines, tile) {
   lines.features = lines.features.map(function(line){
@@ -74,4 +80,11 @@ function clip(lines, tile) {
       if(line) return true;
     });
     return lines;
+}
+
+function cleanLines (lines) {
+  lines.features.filter(function(line){
+    if(line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString') return true;
+  });
+  return lines;
 }

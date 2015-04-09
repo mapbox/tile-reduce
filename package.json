@@ -21,8 +21,7 @@
   "homepage": "https://github.com/mapbox/vt-mapreduce",
   "devDependencies": {
     "glob": "^5.0.3",
-    "tape": "^3.5.0",
-    "turf": "^2.0.2"
+    "tape": "^3.5.0"
   },
   "dependencies": {
     "geojson-flatten": "^0.1.0",
@@ -32,6 +31,7 @@
     "request": "^2.54.0",
     "tile-cover": "^2.4.1",
     "tilebelt": "^0.7.1",
-    "vector-tile": "^1.1.2"
+    "vector-tile": "^1.1.2",
+    "turf": "2.0.2"
   }
 }
