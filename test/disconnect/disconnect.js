@@ -1,7 +1,9 @@
 //identify disconnected major roads
 var turf = require('turf');
+var tilebelt = require('tilebelt');
 
-module.exports = function(tileLayers, opts){
+module.exports = function(tileLayers, tile){
+  var bbox = tilebelt.tileToBBOX(tile);
   var minDistance = 50/5280; // 50 ft in miles
   var disconnects = turf.featurecollection([]);
   var preserve = { "motorway" : true, "primary" : true, "secondary" : true, "tertiary" : true, "trunk": true };
@@ -23,7 +25,7 @@ try {
         // so we can choose only those that are not already
         // connected to something
         ends.forEach(function(end){
-          if (end[2] < 0 || end[2] > 4096 || end[3] < 0 || end[3] > 4096) {
+          if (end[0] < bbox[0] || end[0] > bbox[2] || end[1] < bbox[1] || end[1] > bbox[3]) {
             return;
           }
 
