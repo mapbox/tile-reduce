@@ -1,10 +1,6 @@
 //identify disconnected major roads
 var turf = require('turf');
 
-var isArray = Array.isArray || function(arg) {
-  return Object.prototype.toString.call(arg) === '[object Array]';
-};
-
 module.exports = function(tileLayers, opts){
   var minDistance = 50/5280; // 50 ft in miles
   var disconnects = turf.featurecollection([]);
@@ -16,7 +12,7 @@ try {
   for (layer in tileLayers.streets) {
     tileLayers.streets[layer].features.forEach(function(line){
       // if (preserve[line.properties.type] && line.geometry.type === 'LineString') {
-      if (line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString') {
+      if (preserve[line.properties.type] && (line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString')) {
         // get start and end points
         var ends = [
           line.geometry.coordinates[0],
@@ -71,6 +67,9 @@ try {
             tileLayers.streets[layer].features.forEach(function(line2){
               if (line2.geometry.type === 'LineString' || line2.geometry.type === 'MultiLineString') {
                 var distance = turf.distance(end, turf.pointOnLine(line2, end));
+		if (distance < minDistance) {
+			console.log(distance + " " + JSON.stringify(line2));
+		}
                 if (distance < best && distance != 0) {
                   best = distance;
                   bestest = line2;
@@ -83,6 +82,7 @@ try {
             end.properties.distance = best;
             disconnects.features.push(end);
             console.log((best * 5280) + " http://www.openstreetmap.org/edit#map=24/" + y + "/" + x + " " + JSON.stringify(end) + " " + JSON.stringify(orig[x][y]) + " " + JSON.stringify(bestest));
+		console.log("---------");
           }
         }
       };
