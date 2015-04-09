@@ -9,7 +9,7 @@ module.exports = function(tileLayers, tile){
   var caps = [];
 
   // Types we are looking for disconnected ends for
-  var preserve_type = { "motorway" : true, "primary" : true, "secondary" : true, "tertiary" : true, "trunk": true };
+  var preserve_type = { "motorway" : true, "primary" : true, "secondary" : true, "tertiary" : true, "trunk": true, "residential": true };
 
   // Classes that we don't want to suggest that they should connect to
   var reject_class = { "major_rail" : true, "minor_rail" : true, "aerialway" : true };
@@ -22,17 +22,18 @@ try {
       var line = tileLayers.streets[layer].features[i];
 
       if (preserve_type[line.properties.type] && (line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString')) {
-        var ends = [
-          line.geometry.coordinates[0],
-          line.geometry.coordinates[line.geometry.coordinates.length-1]
-        ];
+        var endps = [ 0, line.geometry.coordinates.length - 1 ];
 
-        // It's not dangling if it's a loop connecting back to itself
-        if (ends[0][0] == ends[1][0] && ends[0][1] == ends[1][1]) {
-          continue;
-        }
+        endps.forEach(function(endp) {
+          var end = line.geometry.coordinates[endp];
 
-        ends.forEach(function(end){
+          // It's not dangling if it's a loop connecting back to itself
+          for (j = 0; j < line.geometry.coordinates.length; j++) {
+            if (j != endp && end[0] == line.geometry.coordinates[j][0] && end[1] == line.geometry.coordinates[j][1]) {
+              return;
+            }
+          }
+
           if (end[0] < bbox[0] || end[0] > bbox[2] || end[1] < bbox[1] || end[1] > bbox[3]) {
             return;
           }
