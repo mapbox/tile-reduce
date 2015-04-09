@@ -82,14 +82,27 @@ try {
           var distance = turf.distance(cap.point, turf.pointOnLine(line, cap.point));
 
           if (distance < best) {
-            best = distance;
-            bestline = line;
+            var already = false;
+
+            cap.line.geometry.coordinates.forEach(function(capp) {
+              line.geometry.coordinates.forEach(function(linep) {
+                if (capp[0] == linep[0] && capp[1] && linep[1]) {
+                  already = true;
+                }
+              });
+            });
+
+            if (!already) {
+              best = distance;
+              bestline = line;
+            }
           }
         }
       }
     }
 
-    if (best < minDistance && best != 0) {
+    if (best < minDistance) {
+      cap.point.properties.osm_way = cap.line.properties.osm_id;
       disconnects.features.push(cap.point);
       console.log((best * 5280) + " http://www.openstreetmap.org/edit#map=24/" + cap.point.geometry.coordinates[1] + "/" + cap.point.geometry.coordinates[0] + " " + JSON.stringify(cap.point) + " " + JSON.stringify(bestline));
     }
