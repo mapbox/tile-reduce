@@ -17,7 +17,7 @@ test('diff', function(t){
       {
         name: 'streets',
         url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
-        layers: ['road']
+        layers: ['road', 'tunnel', 'bridge']
       },
       {
         name: 'tiger',
@@ -47,7 +47,7 @@ test('diff', function(t){
     var allPoly = geojson.features ? geojson.features.every(function(feature){
       return feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
     }) : false;
-    t.true((allLines && geojson.features.length), 'all diff features were polygons');
+    t.true((allPoly && geojson.features.length), 'all diff features were polygons');
     t.pass('tilereduce completed');
     t.end();
   });
