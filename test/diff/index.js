@@ -45,7 +45,7 @@ test('diff', function(t){
   tilereduce.on('end', function(error){
     t.true(geojson.features.length > 0, 'diff had features');
     var allPoly = geojson.features ? geojson.features.every(function(feature){
-      return feature.geometry.type === 'Polygon';
+      return feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
     }) : false;
     t.true((allLines && geojson.features.length), 'all diff features were polygons');
     t.pass('tilereduce completed');
