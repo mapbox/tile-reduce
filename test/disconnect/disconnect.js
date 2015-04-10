@@ -20,7 +20,7 @@ module.exports = function(tileLayers, tile){
     for (i = 0; i < tileLayers.streets[layer].features.length; i++) {
       var line = tileLayers.streets[layer].features[i];
 
-      if (preserve_type[line.properties.type] && (line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString')) {
+      if (preserve_type[line.properties.type] && line.geometry.type === 'LineString') {
         var endps = [ 0, line.geometry.coordinates.length - 1 ];
 
         endps.forEach(function(endp) {
@@ -71,21 +71,24 @@ module.exports = function(tileLayers, tile){
       var i;
 
       for (i = 0; i < tileLayers.streets[layer].features.length; i++) {
+        // Don't try to match an endpoint to the way that it came from
         if (layer == cap.layer && i == cap.i) {
           continue;
         }
 
         var line = tileLayers.streets[layer].features[i];
 
-        if (!reject_class[line.properties.class] && (line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString')) {
+        if (!reject_class[line.properties.class] && line.geometry.type === 'LineString') {
           var distance = turf.distance(cap.point, turf.pointOnLine(line, cap.point));
 
           if (distance < best) {
             var already = false;
 
+            // Don't try to match an endpoint to a way that its way already
+            // connects to
             cap.line.geometry.coordinates.forEach(function(capp) {
               line.geometry.coordinates.forEach(function(linep) {
-                if (capp[0] == linep[0] && capp[1] && linep[1]) {
+                if (capp[0] == linep[0] && capp[1] == linep[1]) {
                   already = true;
                 }
               });
