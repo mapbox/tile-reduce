@@ -1,8 +1,12 @@
 var turf = require('turf'),
-  flatten = require('geojson-flatten');
+  flatten = require('geojson-flatten'),
+  tilebelt = require('tilebelt');
 
-module.exports = function(tileLayers, opts) {
+module.exports = function(tileLayers, tile) {
+  console.log('working on ', tile);
+
   var tigerRoads = tileLayers.tiger.tiger20062014;
+
   tigerRoads.features = tigerRoads.features.map(function(road) {
     return turf.buffer(road, 1, 'meters').features[0];
   });
@@ -15,9 +19,20 @@ module.exports = function(tileLayers, opts) {
   streetsRoads = turf.merge(streetsRoads);
 
   var erase = turf.erase(flatten(tigerRoads)[0], flatten(streetsRoads)[0]);
-  console.log(JSON.stringify(erase));
-  // why are my results from such a large tile?
-    // osm tile is huge compared to tiger tile
 
-  return streetsRoads;
+  var tileBounds = {
+    "type": "Feature",
+    "geometry": tilebelt.tileToGeoJSON(tile),
+    "properties": {}
+  };
+
+  var bufferedBounds = turf.buffer(tileBounds, 1, 'miles');
+  var tileHole = turf.erase(bufferedBounds.features[0], tileBounds);
+  var target = turf.erase(tileHole, erase);
+
+  console.log('---');
+  console.log(JSON.stringify(target));
+  console.log('---');
+
+  return erase;
 };
