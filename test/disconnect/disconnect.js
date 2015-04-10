@@ -1,6 +1,7 @@
 //identify disconnected major roads
 var turf = require('turf');
 var tilebelt = require('tilebelt');
+var flatten = require('geojson-flatten');
 
 module.exports = function(tileLayers, tile){
   var bbox = tilebelt.tileToBBOX(tile);
@@ -18,48 +19,52 @@ module.exports = function(tileLayers, tile){
     var i, j, k;
 
     for (i = 0; i < tileLayers.streets[layer].features.length; i++) {
-      var line = tileLayers.streets[layer].features[i];
+      var flat = flatten(tileLayers.streets[layer].features[i]);
 
-      if (preserve_type[line.properties.type] && line.geometry.type === 'LineString') {
-        var endps = [ 0, line.geometry.coordinates.length - 1 ];
+      flat.forEach(function(line) {
+        if (preserve_type[line.properties.type] && (line.geometry.type === 'LineString')) {
+          var endps = [ 0, line.geometry.coordinates.length - 1 ];
 
-        endps.forEach(function(endp) {
-          var end = line.geometry.coordinates[endp];
+          endps.forEach(function(endp) {
+            var end = line.geometry.coordinates[endp];
 
-          // It's not dangling if it's a loop connecting back to itself
-          for (j = 0; j < line.geometry.coordinates.length; j++) {
-            if (j != endp && end[0] == line.geometry.coordinates[j][0] && end[1] == line.geometry.coordinates[j][1]) {
+            // It's not dangling if it's a loop connecting back to itself
+            for (j = 0; j < line.geometry.coordinates.length; j++) {
+              if (j != endp && end[0] == line.geometry.coordinates[j][0] && end[1] == line.geometry.coordinates[j][1]) {
+                return;
+              }
+            }
+
+            if (end[0] < bbox[0] || end[0] > bbox[2] || end[1] < bbox[1] || end[1] > bbox[3]) {
               return;
             }
-          }
 
-          if (end[0] < bbox[0] || end[0] > bbox[2] || end[1] < bbox[1] || end[1] > bbox[3]) {
-            return;
-          }
+            var dup = false;
 
-          var dup = false;
+            for (layer2 in tileLayers.streets) {
+              for (j = 0; j < tileLayers.streets[layer2].features.length; j++) {
+                var flat2 = flatten(tileLayers.streets[layer2].features[j]);
 
-          for (layer2 in tileLayers.streets) {
-            for (j = 0; j < tileLayers.streets[layer2].features.length; j++) {
-              if (layer === layer2 && i == j) {
-                continue;
-              }
+                flat2.forEach(function(line2) {
+                  if (layer === layer2 && i == j) {
+                    return;
+                  }
 
-              var line2 = tileLayers.streets[layer2].features[j];
-
-              for (k = 0; !dup && k < line2.geometry.coordinates.length; k++) {
-                if (end[0] === line2.geometry.coordinates[k][0] && end[1] === line2.geometry.coordinates[k][1]) {
-                  dup = true;
-                }
+                  for (k = 0; !dup && k < line2.geometry.coordinates.length; k++) {
+                    if (end[0] === line2.geometry.coordinates[k][0] && end[1] === line2.geometry.coordinates[k][1]) {
+                      dup = true;
+                    }
+                  }
+                });
               }
             }
-          }
 
-          if (!dup) {
-            caps.push({layer: layer, i: i, point: turf.point(end), line: line});
-          }
-        });
-      }
+            if (!dup) {
+              caps.push({layer: layer, i: i, point: turf.point(end), line: line});
+            }
+          });
+        }
+      });
     }
   }
 
@@ -71,35 +76,37 @@ module.exports = function(tileLayers, tile){
       var i;
 
       for (i = 0; i < tileLayers.streets[layer].features.length; i++) {
-        // Don't try to match an endpoint to the way that it came from
-        if (layer == cap.layer && i == cap.i) {
-          continue;
-        }
+        var flat = flatten(tileLayers.streets[layer].features[i]);
 
-        var line = tileLayers.streets[layer].features[i];
+        flat.forEach(function(line) {
+          // Don't try to match an endpoint to the way that it came from
+          if (layer == cap.layer && i == cap.i) {
+            return;
+          }
 
-        if (!reject_class[line.properties.class] && line.geometry.type === 'LineString') {
-          var distance = turf.distance(cap.point, turf.pointOnLine(line, cap.point));
+          if (!reject_class[line.properties.class] && line.geometry.type === 'LineString') {
+            var distance = turf.distance(cap.point, turf.pointOnLine(line, cap.point));
 
-          if (distance < best) {
-            var already = false;
+            if (distance < best) {
+              var already = false;
 
-            // Don't try to match an endpoint to a way that its way already
-            // connects to
-            cap.line.geometry.coordinates.forEach(function(capp) {
-              line.geometry.coordinates.forEach(function(linep) {
-                if (capp[0] == linep[0] && capp[1] == linep[1]) {
-                  already = true;
-                }
+              // Don't try to match an endpoint to a way that its way already
+              // connects to
+              cap.line.geometry.coordinates.forEach(function(capp) {
+                line.geometry.coordinates.forEach(function(linep) {
+                  if (capp[0] == linep[0] && capp[1] == linep[1]) {
+                    already = true;
+                  }
+                });
               });
-            });
 
-            if (!already) {
-              best = distance;
-              bestline = line;
+              if (!already) {
+                best = distance;
+                bestline = line;
+              }
             }
           }
-        }
+        });
       }
     }
 
@@ -109,7 +116,7 @@ module.exports = function(tileLayers, tile){
       cap.point.properties.unconnected_distance_feet = best * 5280;
       cap.point.properties.possible_link = bestline.properties.osm_id;
       disconnects.features.push(cap.point);
-      // console.log((best * 5280) + " http://www.openstreetmap.org/edit#map=24/" + cap.point.geometry.coordinates[1] + "/" + cap.point.geometry.coordinates[0] + " " + JSON.stringify(cap.point) + " " + JSON.stringify(bestline));
+      console.log((best * 5280) + " http://www.openstreetmap.org/edit#map=24/" + cap.point.geometry.coordinates[1] + "/" + cap.point.geometry.coordinates[0] + " " + JSON.stringify(cap.point) + " " + JSON.stringify(bestline));
     }
   });
   
