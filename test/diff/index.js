@@ -7,12 +7,12 @@ test('diff', function(t){
   var bbox = [
     -77.05810546875,
     38.913475954379756,
-    -78.04608917236328,
+    -77.04608917236328,
     38.92282516381189
   ];
 
   var opts = {
-    zoom: 12,
+    zoom: 15,
     tileLayers: [
       {
         name: 'streets',
@@ -25,7 +25,7 @@ test('diff', function(t){
         layers: ['tiger20062014']
       }
     ],
-    map: __dirname+'/diff.js'
+    map: __dirname + '/diff.js'
   };
 
   var tilereduce = TileReduce(bbox, opts);
@@ -38,26 +38,23 @@ test('diff', function(t){
     });
   });
 
-  tilereduce.on('reduce', function(result, tile){
-    geojson.features = geojson.features.concat(result.features);
+  tilereduce.on('reduce', function(result){
+    if (result) geojson.features = geojson.features.concat(result);
   });
 
   tilereduce.on('end', function(error){
     t.true(geojson.features.length > 0, 'diff had features');
-    var allLines = true;
-    geojson.features.forEach(function(line){
-      if (!(line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString')) {
-        allLines = false;
-      }
-    });
-    t.true(allLines, 'all diff features were lines');
-    // // fs.writeFileSync(__dirname+'/out.geojson', JSON.stringify(geojson));
+    var allPoly = geojson.features ? geojson.features.every(function(feature){
+      return feature.geometry.type === 'Polygon';
+    }) : false;
+    t.true((allLines && geojson.features.length), 'all diff features were polygons');
     t.pass('tilereduce completed');
     t.end();
   });
 
-  tilereduce.on('error', function(error){
-    throw error;
+  tilereduce.on('error', function(err){
+    console.log(err);
+    throw err;
   });
 
   tilereduce.run();

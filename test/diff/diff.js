@@ -28,11 +28,8 @@ module.exports = function(tileLayers, tile) {
 
   var bufferedBounds = turf.buffer(tileBounds, 1, 'miles');
   var tileHole = turf.erase(bufferedBounds.features[0], tileBounds);
-  var target = turf.erase(erase, tileHole);
+  var tigerDeltas = turf.erase(erase, tileHole);
 
-  console.log('---');
-  console.log(JSON.stringify(target));
-  console.log('---');
-
-  return erase;
+  // return a feature collection
+  return tigerDeltas;
 };
