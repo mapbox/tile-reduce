@@ -16,12 +16,14 @@ module.exports = function(tileLayers, tile){
   var reject_class = { "major_rail" : true, "minor_rail" : true, "aerialway" : true };
 
   for (layer in tileLayers.streets) {
-    var i, j, k;
+    var i, j, k, f, g;
 
     for (i = 0; i < tileLayers.streets[layer].features.length; i++) {
       var flat = flatten(tileLayers.streets[layer].features[i]);
 
-      flat.forEach(function(line) {
+      for (f = 0; f < flat.length; f++) {
+        var line = flat[f];
+
         if (preserve_type[line.properties.type] && (line.geometry.type === 'LineString')) {
           var endps = [ 0, line.geometry.coordinates.length - 1 ];
 
@@ -29,9 +31,19 @@ module.exports = function(tileLayers, tile){
             var end = line.geometry.coordinates[endp];
 
             // It's not dangling if it's a loop connecting back to itself
-            for (j = 0; j < line.geometry.coordinates.length; j++) {
-              if (j != endp && end[0] == line.geometry.coordinates[j][0] && end[1] == line.geometry.coordinates[j][1]) {
-                return;
+            for (g = 0; g < flat.length; g++) {
+              var line2 = flat[g];
+
+              for (j = 0; j < line2.geometry.coordinates.length; j++) {
+                if (end[0] == line2.geometry.coordinates[j][0] && end[1] == line2.geometry.coordinates[j][1]) {
+                  if (f != g) {
+                    return;
+                  } else {
+                    if (j != endp) {
+                      return;
+                    }
+                  }
+                }
               }
             }
 
@@ -64,7 +76,7 @@ module.exports = function(tileLayers, tile){
             }
           });
         }
-      });
+      }
     }
   }
 
@@ -116,7 +128,7 @@ module.exports = function(tileLayers, tile){
       cap.point.properties.unconnected_distance_feet = best * 5280;
       cap.point.properties.possible_link = bestline.properties.osm_id;
       disconnects.features.push(cap.point);
-      console.log((best * 5280) + " http://www.openstreetmap.org/edit#map=24/" + cap.point.geometry.coordinates[1] + "/" + cap.point.geometry.coordinates[0] + " " + JSON.stringify(cap.point) + " " + JSON.stringify(bestline));
+      // console.log((best * 5280) + " http://www.openstreetmap.org/edit#map=24/" + cap.point.geometry.coordinates[1] + "/" + cap.point.geometry.coordinates[0] + " " + JSON.stringify(cap.point) + " " + JSON.stringify(bestline));
     }
   });
   
