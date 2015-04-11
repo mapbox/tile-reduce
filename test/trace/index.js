@@ -3,13 +3,15 @@ var TileReduce = require('../../');
 var diff = require('./trace.js');
 var turf = require('turf');
 var fs = require('fs');
+var tilebelt = require('tilebelt');
+var turf = require('turf');
 
-test('diff', function(t){
+test('trace', function(t){
   var bbox = [
-    -79.82786178588867,
-    32.85147083076529,
-    -79.76743698120117,
-    32.899047110321014
+    -79.88468170166014,
+    32.807764678901414,
+    -79.7823715209961,
+    32.90524456313979
     ];
 
   var opts = {
@@ -36,19 +38,24 @@ test('diff', function(t){
     streets: turf.featurecollection([]),
     streetsBuff: turf.featurecollection([]),
     missing: turf.featurecollection([]),
+    tiles: turf.featurecollection([])
   };
 
   var tilesToProcess;
   var tilesProcessed = 0;
   tilereduce.on('start', function(tiles){
     t.pass('tilereduce started');
-    t.equal(tiles.length, 49);
+    t.equal(tiles.length, 121);
     t.equal(tiles[0].length, 3);
     t.equal(tiles[1].length, 3);
     tilesToProcess = tiles.length;
+
+    tiles.forEach(function(tile){
+      layers.tiles.features.push(turf.polygon(tilebelt.tileToGeoJSON(tile).coordinates));
+    });
   });
 
-  tilereduce.on('reduce', function(result, tile){
+  tilereduce.on('reduce', function(result){
     tilesProcessed++;
     layers.missing.features = layers.missing.features.concat(result.missing.features);
     layers.runkeeper.features = layers.runkeeper.features.concat(result.runkeeper.features);
@@ -58,7 +65,7 @@ test('diff', function(t){
 
   tilereduce.on('end', function(error){
     t.true(layers.missing.features.length > 0, 'trace had features');
-    t.true(layers.missing.features.length > 100, 'at least 100 points');
+    t.equal(layers.missing.features.length, 83);
     var allPoints = true;
     layers.missing.features.forEach(function(pt){
       if(!(pt.geometry.type === 'Point')){
@@ -69,10 +76,11 @@ test('diff', function(t){
 
     t.equal(tilesToProcess, tilesProcessed, 'processed all tile');
     
-    fs.writeFileSync(__dirname+'/missing.geojson', JSON.stringify(layers.missing));
-    fs.writeFileSync(__dirname+'/runkeeper.geojson', JSON.stringify(layers.runkeeper));
-    fs.writeFileSync(__dirname+'/streets.geojson', JSON.stringify(layers.streets));
-    fs.writeFileSync(__dirname+'/streets-buff.geojson', JSON.stringify(layers.streetsBuff));
+    fs.writeFileSync(__dirname+'/out/missing.geojson', JSON.stringify(layers.missing));
+    fs.writeFileSync(__dirname+'/out/runkeeper.geojson', JSON.stringify(layers.runkeeper));
+    fs.writeFileSync(__dirname+'/out/streets.geojson', JSON.stringify(layers.streets));
+    fs.writeFileSync(__dirname+'/out/streets-buff.geojson', JSON.stringify(layers.streetsBuff));
+    fs.writeFileSync(__dirname+'/out/tiles.geojson', JSON.stringify(layers.tiles));
     t.pass('tilereduce completed');
 
     t.end();
