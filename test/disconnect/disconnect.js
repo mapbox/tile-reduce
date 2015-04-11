@@ -15,6 +15,7 @@ module.exports = function(tileLayers, tile){
   // Classes that we don't want to suggest that they should connect to
   var reject_class = { "major_rail" : true, "minor_rail" : true, "aerialway" : true };
 
+  // First pass: finding road ends that don't connect to anything
   for (layer in tileLayers.streets) {
     var i, j, k, f, g;
 
@@ -47,12 +48,14 @@ module.exports = function(tileLayers, tile){
               }
             }
 
+            // It's not dangling if it's outside the bounding box and was just clipped here
             if (end[0] < bbox[0] || end[0] > bbox[2] || end[1] < bbox[1] || end[1] > bbox[3]) {
               return;
             }
 
             var dup = false;
 
+            // It's also not dangling if it connects to any other road
             for (layer2 in tileLayers.streets) {
               for (j = 0; j < tileLayers.streets[layer2].features.length; j++) {
                 var flat2 = flatten(tileLayers.streets[layer2].features[j]);
@@ -80,6 +83,7 @@ module.exports = function(tileLayers, tile){
     }
   }
 
+  // Second pass: find other roads that are near the dangling ends
   caps.forEach(function(cap) {
     var best = Number.MAX_VALUE;
     var bestline = null;
@@ -102,8 +106,8 @@ module.exports = function(tileLayers, tile){
             if (distance < best) {
               var already = false;
 
-              // Don't try to match an endpoint to a way that its way already
-              // connects to
+              // Don't try to match an endpoint to a way that the
+              // way that it comes from already connects to
               cap.line.geometry.coordinates.forEach(function(capp) {
                 line.geometry.coordinates.forEach(function(linep) {
                   if (capp[0] == linep[0] && capp[1] == linep[1]) {
