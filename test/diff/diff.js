@@ -36,18 +36,18 @@ module.exports = function(tileLayers, tile) {
 
 function clip(lines, tile) {
   lines.features = lines.features.map(function(line){
-      try {
-        var clipped = turf.intersect(line, turf.polygon(tilebelt.tileToGeoJSON(tile).coordinates));
-        return clipped;
-      } catch(e){
-        return;
-      }
-    });
-    lines.features = lines.features.filter(function(line){
-      if(line) return true;
-    });
-    lines.features = lines.features.filter(function(line){
-      if(line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString') return true;
-    });
-    return lines;
+    try {
+      var clipped = turf.intersect(line, turf.polygon(tilebelt.tileToGeoJSON(tile).coordinates));
+      return clipped;
+    } catch(e){
+      return;
+    }
+  });
+  lines.features = lines.features.filter(function(line){
+    if(line) return true;
+  });
+  lines.features = lines.features.filter(function(line){
+    if(line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString') return true;
+  });
+  return lines;
 }
