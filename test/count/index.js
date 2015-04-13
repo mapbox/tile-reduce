@@ -27,19 +27,18 @@ test('count', function(t){
   var tilereduce = TileReduce(bbox, opts);
 
   tilereduce.on('start', function(tiles){
-    t.equal(tiles.length, 12)
-    t.true(tiles.length > 0);
+    t.equal(tiles.length, 12, '12 tiles covered')
     tiles.forEach(function(tile) {
-      t.equal(tile.length, 3);
+      t.equal(tile.length, 3, 'valid tile');
     });
   });
 
-  tilereduce.on('reduce', function(result, tile){
+  tilereduce.on('reduce', function(result){
     totalLines += result;
   });
 
   tilereduce.on('end', function(){
-    t.equal(totalLines, 26707, 'should be 26707 lines')
+    t.true(totalLines > 25000, 'should be > 25000 lines')
     t.pass('tilereduce completed');
     t.end();
   });
