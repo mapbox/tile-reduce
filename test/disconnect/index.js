@@ -2,6 +2,7 @@ var test = require('tape');
 var TileReduce = require('../../');
 var count = require('./disconnect.js');
 var turf = require('turf');
+var fs = require('fs');
 
 test('disconnect', function(t){
   var bbox = [
@@ -12,12 +13,12 @@ test('disconnect', function(t){
     ];
 
   var opts = {
-    zoom: 12,
+    zoom: 15,
     tileLayers: [
         {
           name: 'streets',
           url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
-          layers: ['road']
+          layers: ['road', 'bridge', 'tunnel']
         }
       ],
     map: __dirname+'/disconnect.js'
@@ -28,7 +29,7 @@ test('disconnect', function(t){
   var geojson = turf.featurecollection([]);
 
   tilereduce.on('start', function(tiles){
-    t.equal(tiles.length, 12)
+    t.equal(tiles.length, 399)
     t.true(tiles.length > 0);
     tiles.forEach(function(tile) {
       t.equal(tile.length, 3);
