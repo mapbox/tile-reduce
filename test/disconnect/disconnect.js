@@ -16,13 +16,13 @@ module.exports = function(tileLayers, tile){
   var reject_class = { "major_rail" : true, "minor_rail" : true, "aerialway" : true };
 
   // First pass: finding road ends that don't connect to anything
-  for (layer in tileLayers.streets) {
+  for (var layer in tileLayers.streets) {
     var i, j, k, f, g;
 
-    for (i = 0; i < tileLayers.streets[layer].features.length; i++) {
+    for (var i = 0; i < tileLayers.streets[layer].features.length; i++) {
       var flat = flatten(tileLayers.streets[layer].features[i]);
 
-      for (f = 0; f < flat.length; f++) {
+      for (var f = 0; f < flat.length; f++) {
         var line = flat[f];
 
         if (preserve_type[line.properties.type] && (line.geometry.type === 'LineString')) {
@@ -32,10 +32,10 @@ module.exports = function(tileLayers, tile){
             var end = line.geometry.coordinates[endp];
 
             // It's not dangling if it's a loop connecting back to itself
-            for (g = 0; g < flat.length; g++) {
+            for (var g = 0; g < flat.length; g++) {
               var line2 = flat[g];
 
-              for (j = 0; j < line2.geometry.coordinates.length; j++) {
+              for (var j = 0; j < line2.geometry.coordinates.length; j++) {
                 if (end[0] == line2.geometry.coordinates[j][0] && end[1] == line2.geometry.coordinates[j][1]) {
                   if (f != g) {
                     return;
@@ -56,8 +56,8 @@ module.exports = function(tileLayers, tile){
             var dup = false;
 
             // It's also not dangling if it connects to any other road
-            for (layer2 in tileLayers.streets) {
-              for (j = 0; j < tileLayers.streets[layer2].features.length; j++) {
+            for (var layer2 in tileLayers.streets) {
+              for (var j = 0; j < tileLayers.streets[layer2].features.length; j++) {
                 var flat2 = flatten(tileLayers.streets[layer2].features[j]);
 
                 flat2.forEach(function(line2) {
@@ -65,7 +65,7 @@ module.exports = function(tileLayers, tile){
                     return;
                   }
 
-                  for (k = 0; !dup && k < line2.geometry.coordinates.length; k++) {
+                  for (var k = 0; !dup && k < line2.geometry.coordinates.length; k++) {
                     if (end[0] === line2.geometry.coordinates[k][0] && end[1] === line2.geometry.coordinates[k][1]) {
                       dup = true;
                     }
@@ -88,10 +88,10 @@ module.exports = function(tileLayers, tile){
     var best = Number.MAX_VALUE;
     var bestline = null;
 
-    for (layer in tileLayers.streets) {
+    for (var layer in tileLayers.streets) {
       var i;
 
-      for (i = 0; i < tileLayers.streets[layer].features.length; i++) {
+      for (var i = 0; i < tileLayers.streets[layer].features.length; i++) {
         var flat = flatten(tileLayers.streets[layer].features[i]);
 
         flat.forEach(function(line) {
