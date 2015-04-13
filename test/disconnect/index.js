@@ -29,6 +29,7 @@ test('disconnect', function(t){
   var geojson = turf.featurecollection([]);
 
   tilereduce.on('start', function(tiles){
+    t.pass('tilereduce started')
     t.equal(tiles.length, 399)
     t.true(tiles.length > 0);
     tiles.forEach(function(tile) {
@@ -51,7 +52,7 @@ test('disconnect', function(t){
     t.true(allPoints, 'all disconnect features were points');
 
     fs.writeFileSync(__dirname+'/out.geojson', JSON.stringify(geojson));
-    t.ok('tilereduce completed');
+    t.pass('tilereduce completed');
 
     t.end();
   });
