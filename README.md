@@ -12,6 +12,8 @@ npm install tile-reduce
 
 ##example
 
+This example takes a selection of OpenStreetMap roads from Mapbox Streets, buffers them, and pipes the output to tippecanoe.
+
 ###run
 
 ```sh
