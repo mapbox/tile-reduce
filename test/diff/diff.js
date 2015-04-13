@@ -17,21 +17,22 @@ module.exports = function(tileLayers, tile) {
   tigerRoads = normalize(flatten(tigerRoads));
 
   // buffer streets
-  streets.features = streets.features.map(function(road){
+  var streetBuffers = turf.featurecollection([]);
+  streetBuffers.features = streets.features.map(function(road){
     return turf.buffer(road, 5, 'meters').features[0];
   });
-  streets = normalize(turf.merge(streets));
+  streetBuffers = normalize(turf.merge(streetBuffers));
 
   // erase street buffer from tiger lines
   var tigerDeltas = turf.featurecollection([]);
   tigerRoads.features.forEach(function(tigerRoad){
-    streets.features.forEach(function(streetsRoad){
+    streetBuffers.features.forEach(function(streetsRoad){
       var roadDiff = turf.erase(tigerRoad, streetsRoad);
       if(roadDiff) tigerDeltas.features.push(roadDiff);
     });
   });
   tigerDeltas = normalize(flatten(tigerDeltas));
-  
+
   return {
     diff: tigerDeltas,
     tiger: tigerRoads,
