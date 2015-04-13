@@ -41,14 +41,14 @@ test('disconnect', function(t){
   });
 
   tilereduce.on('end', function(){
-    t.true(geojson.features.length > 0, 'trace had features');
+    t.true(geojson.features.length > 0, 'disconnects had features');
     var allPoints = true;
     geojson.features.forEach(function(pt){
       if(!(pt.geometry.type === 'Point')){
         allPoints = false;
       }
     });
-    t.true(allPoints, 'all trace features were points');
+    t.true(allPoints, 'all disconnect features were points');
 
     fs.writeFileSync(__dirname+'/out.geojson', JSON.stringify(geojson));
     t.ok('tilereduce completed');
