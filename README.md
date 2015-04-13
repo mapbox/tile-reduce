@@ -63,3 +63,9 @@ module.exports = function (tileLayers, opts){
   return turf.buffer(roads, 20, 'meters');
 }
 ```
+
+##test
+
+```sh
+npm test
+```
