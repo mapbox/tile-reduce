@@ -5,9 +5,10 @@ var turf = require('turf');
 var queue = require('queue-async');
 
 process.on('message', function(data) {
+  var mapOperation = require(data.opts.map);
   data.tiles.forEach(function(tile){
     var layerCollection = {};
-    var q = queue(1);
+    var q = queue(4);
     data.opts.tileLayers.forEach(function(tileLayer){
       q.defer(getVectorTile, tile, tileLayer);
     });
@@ -19,7 +20,7 @@ process.on('message', function(data) {
             layerCollection[item.name][layer] = item[layer];
           });
         });
-        var message = require(data.opts.map)(layerCollection, tile);
+        var message = mapOperation(layerCollection, tile);
         process.send(message);
       } else {
         process.send(0);
