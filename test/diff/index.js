@@ -6,10 +6,10 @@ var fs = require('fs');
 
 test('diff', function(t){
   var bbox = [
-    -77.05810546875,
-    38.913475954379756,
-    -77.04608917236328,
-    38.92282516381189
+     -77.06866264343262,
+    38.92062153254231,
+    -77.02746391296387,
+    38.9499309049864
   ];
 
   var opts = {
@@ -30,29 +30,37 @@ test('diff', function(t){
   };
 
   var tilereduce = TileReduce(bbox, opts);
-  var geojson = turf.featurecollection([]);
+  var layers = {
+    diff: turf.featurecollection([]),
+    tiger: turf.featurecollection([]),
+    streets: turf.featurecollection([])
+  }
 
   tilereduce.on('start', function(tiles){
-    t.equal(tiles.length, 4, '4 tiles covered');
+    t.equal(tiles.length, 16, '4 tiles covered');
     tiles.forEach(function(tile) {
       t.equal(tile.length, 3, 'valid tile');
     });
   });
 
   tilereduce.on('reduce', function(result){
-    if (result) geojson.features = geojson.features.concat(result.features);
+    layers.diff.features = layers.diff.features.concat(result.diff.features);
+    layers.tiger.features = layers.tiger.features.concat(result.tiger.features);
+    layers.streets.features = layers.streets.features.concat(result.streets.features);
   });
 
   tilereduce.on('end', function(error){
-    t.true(geojson.features.length > 0, 'diff had features');
+    t.true(layers.diff.features.length > 0, 'diff had features');
     var allLines = true;
-    geojson.features.forEach(function(feature){
+    layers.diff.features.forEach(function(feature){
       if(!(feature.geometry.type === 'LineString')){
         allLines = false;
       }
     });
     t.true(allLines, 'all trace features were polygons');
-    fs.writeFileSync(__dirname+'/out.geojson', JSON.stringify(geojson));
+    fs.writeFileSync(__dirname+'/out/diff.geojson', JSON.stringify(layers.diff));
+    fs.writeFileSync(__dirname+'/out/tiger.geojson', JSON.stringify(layers.tiger));
+    fs.writeFileSync(__dirname+'/out/streets.geojson', JSON.stringify(layers.streets));
     t.pass('tilereduce completed');
     t.end();
   });

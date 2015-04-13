@@ -18,7 +18,7 @@ module.exports = function(tileLayers, tile) {
 
   // buffer streets
   streets.features = streets.features.map(function(road){
-    return turf.buffer(road, 20, 'meters').features[0];
+    return turf.buffer(road, 5, 'meters').features[0];
   });
   streets = normalize(turf.merge(streets));
 
@@ -31,7 +31,12 @@ module.exports = function(tileLayers, tile) {
     });
   });
   tigerDeltas = normalize(flatten(tigerDeltas));
-  return tigerDeltas;
+  
+  return {
+    diff: tigerDeltas,
+    tiger: tigerRoads,
+    streets: streets
+  };
 };
 
 function clip(lines, tile) {
