@@ -2,6 +2,7 @@ var test = require('tape');
 var TileReduce = require('../../');
 var diff = require('./diff.js');
 var turf = require('turf');
+var fs = require('fs');
 
 test('diff', function(t){
   var bbox = [
@@ -32,28 +33,31 @@ test('diff', function(t){
   var geojson = turf.featurecollection([]);
 
   tilereduce.on('start', function(tiles){
-    t.true(tiles.length > 0);
+    t.equal(tiles.length, 4, '4 tiles covered');
     tiles.forEach(function(tile) {
-      t.equal(tile.length, 3);
+      t.equal(tile.length, 3, 'valid tile');
     });
   });
 
   tilereduce.on('reduce', function(result){
-    if (result) geojson.features = geojson.features.concat(result);
+    if (result) geojson.features = geojson.features.concat(result.features);
   });
 
   tilereduce.on('end', function(error){
     t.true(geojson.features.length > 0, 'diff had features');
-    var allPoly = geojson.features ? geojson.features.every(function(feature){
-      return feature.geometry.type === 'Polygon' || feature.geometry.type === 'MultiPolygon';
-    }) : false;
-    t.true((allPoly && geojson.features.length), 'all diff features were polygons');
+    var allLines = true;
+    geojson.features.forEach(function(feature){
+      if(!(feature.geometry.type === 'LineString')){
+        allLines = false;
+      }
+    });
+    t.true(allLines, 'all trace features were polygons');
+    fs.writeFileSync(__dirname+'/out.geojson', JSON.stringify(geojson));
     t.pass('tilereduce completed');
     t.end();
   });
 
   tilereduce.on('error', function(err){
-    console.log(err);
     throw err;
   });
 

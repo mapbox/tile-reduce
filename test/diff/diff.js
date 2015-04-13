@@ -4,34 +4,50 @@ var turf = require('turf'),
   tilebelt = require('tilebelt');
 
 module.exports = function(tileLayers, tile) {
-  var tigerRoads = tileLayers.tiger.tiger20062014;
-
-  tigerRoads.features = tigerRoads.features.map(function(road) {
-    return turf.buffer(road, 1, 'meters').features[0];
-  });
-  tigerRoads = turf.merge(tigerRoads);
-
-  var streets = normalize(flatten(tileLayers.streets.road));
+  // concat feature classes and normalize data
+  var tigerRoads = normalize(tileLayers.tiger.tiger20062014);
+  var streets = normalize(tileLayers.streets.road);
   streets.features = streets.features.concat(normalize(flatten(tileLayers.streets.bridge)).features);
   streets.features = streets.features.concat(normalize(flatten(tileLayers.streets.tunnel)).features);
 
+  // clip features to tile
+  streets = clip(streets, tile);
+  tigerRoads = clip(tigerRoads, tile);
+  streets = normalize(flatten(streets));
+  tigerRoads = normalize(flatten(tigerRoads));
+
+  // buffer streets
   streets.features = streets.features.map(function(road){
     return turf.buffer(road, 20, 'meters').features[0];
   });
-  streets = turf.merge(streets);
+  streets = normalize(turf.merge(streets));
 
-  var erase = turf.erase(flatten(tigerRoads)[0], flatten(streets)[0]);
-
-  var tileBounds = {
-    "type": "Feature",
-    "geometry": tilebelt.tileToGeoJSON(tile),
-    "properties": {}
-  };
-
-  var bufferedBounds = turf.buffer(tileBounds, 1, 'miles');
-  var tileHole = turf.erase(bufferedBounds.features[0], tileBounds);
-  var tigerDeltas = turf.erase(erase, tileHole);
-
-  // return a feature collection
+  // erase street buffer from tiger lines
+  var tigerDeltas = turf.featurecollection([]);
+  tigerRoads.features.forEach(function(tigerRoad){
+    streets.features.forEach(function(streetsRoad){
+      var roadDiff = turf.erase(tigerRoad, streetsRoad);
+      if(roadDiff) tigerDeltas.features.push(roadDiff);
+    });
+  });
+  tigerDeltas = normalize(flatten(tigerDeltas));
   return tigerDeltas;
 };
+
+function clip(lines, tile) {
+  lines.features = lines.features.map(function(line){
+      try {
+        var clipped = turf.intersect(line, turf.polygon(tilebelt.tileToGeoJSON(tile).coordinates));
+        return clipped;
+      } catch(e){
+        return;
+      }
+    });
+    lines.features = lines.features.filter(function(line){
+      if(line) return true;
+    });
+    lines.features = lines.features.filter(function(line){
+      if(line.geometry.type === 'LineString' || line.geometry.type === 'MultiLineString') return true;
+    });
+    return lines;
+}
