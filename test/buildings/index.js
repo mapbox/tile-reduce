@@ -2,7 +2,7 @@ var test = require('tape');
 var TileReduce = require('../../');
 var count = require('./buildings.js');
 
-test('count', function(t){
+test('building count', function(t){
   var bbox = [
     13.425722,
     52.499556,

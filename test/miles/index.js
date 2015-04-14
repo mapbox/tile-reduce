@@ -1,9 +1,8 @@
 var test = require('tape');
 var TileReduce = require('../../');
 var count = require('./miles.js');
-var turf = require('turf');
 
-test('count', function(t){
+test('mile count', function(t){
   var bbox = [
     13.425722,
     52.499556,
@@ -41,7 +40,7 @@ test('count', function(t){
 
   tilereduce.on('end', function(){
     var minMiles = 115;
-    t.true(miles > minMiles, Math.round(miles * 100)/100 + ' miles is greater than ' + minMiles + ' miles');
+    t.true(miles > minMiles, 'greater than ' + minMiles + ' miles of roads/paths (' + Math.round(miles * 100)/100 + ')');
     t.pass('tilereduce completed');
     t.end();
   });
