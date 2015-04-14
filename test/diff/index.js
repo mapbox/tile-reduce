@@ -34,12 +34,12 @@ test('diff', function(t){
     diff: turf.featurecollection([]),
     tiger: turf.featurecollection([]),
     streets: turf.featurecollection([])
-  }
+  };
 
   tilereduce.on('start', function(tiles){
     t.equal(tiles.length, 16, '4 tiles covered');
     tiles.forEach(function(tile) {
-      t.equal(tile.length, 3, 'valid tile');
+      t.equal(tile.length, 3, 'valid tile [' + tile + ']');
     });
   });
 
@@ -51,13 +51,10 @@ test('diff', function(t){
 
   tilereduce.on('end', function(error){
     t.true(layers.diff.features.length > 0, 'diff had features');
-    var allLines = true;
-    layers.diff.features.forEach(function(feature){
-      if(!(feature.geometry.type === 'LineString')){
-        allLines = false;
-      }
+    var allLines = layers.diff.features.every(function(feature){
+      return feature.geometry.type === 'LineString';
     });
-    t.true(allLines, 'all trace features were polygons');
+    t.true(allLines, 'all trace features were lines');
     fs.writeFileSync(__dirname+'/out/diff.geojson', JSON.stringify(layers.diff));
     fs.writeFileSync(__dirname+'/out/tiger.geojson', JSON.stringify(layers.tiger));
     fs.writeFileSync(__dirname+'/out/streets.geojson', JSON.stringify(layers.streets));
