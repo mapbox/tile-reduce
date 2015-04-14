@@ -37,10 +37,12 @@ test('diff', function(t){
   };
 
   tilereduce.on('start', function(tiles){
+    t.pass('tilereduce started');
     t.equal(tiles.length, 16, '4 tiles covered');
-    tiles.forEach(function(tile) {
-      t.equal(tile.length, 3, 'valid tile [' + tile + ']');
+    var allValid = tiles.every(function(tile){
+      return tile.length === 3;
     });
+    t.true(allValid, 'all tiles are valid');
   });
 
   tilereduce.on('reduce', function(result){

@@ -30,11 +30,11 @@ test('disconnect', function(t){
 
   tilereduce.on('start', function(tiles){
     t.pass('tilereduce started');
-    t.equal(tiles.length, 399);
-    t.true(tiles.length > 0);
-    tiles.forEach(function(tile) {
-      t.equal(tile.length, 3);
+    t.equal(tiles.length, 399, '399 tiles covered');
+    var allValid = tiles.every(function(tile){
+      return tile.length === 3;
     });
+    t.true(allValid, 'all tiles are valid');
   });
 
   tilereduce.on('reduce', function(result, tile){
