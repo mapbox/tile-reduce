@@ -61,4 +61,3 @@ module.exports = function (coverArea, opts){
 
   return ee;
 };
-

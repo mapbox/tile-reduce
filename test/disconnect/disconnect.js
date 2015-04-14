@@ -138,4 +138,4 @@ module.exports = function(tileLayers, tile){
   
   // return points where distance is less than 50 feet
   return disconnects;
-}
+};

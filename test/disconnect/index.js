@@ -45,7 +45,7 @@ test('disconnect', function(t){
     t.true(geojson.features.length > 0, 'disconnects had features');
     var allPoints = true;
     geojson.features.forEach(function(pt){
-      if(!(pt.geometry.type === 'Point')){
+      if(pt.geometry.type !== 'Point'){
         allPoints = false;
       }
     });

@@ -27,7 +27,7 @@ test('count', function(t){
   var tilereduce = TileReduce(bbox, opts);
 
   tilereduce.on('start', function(tiles){
-    t.equal(tiles.length, 12, '12 tiles covered')
+    t.equal(tiles.length, 12, '12 tiles covered');
     tiles.forEach(function(tile) {
       t.equal(tile.length, 3, 'valid tile');
     });
@@ -38,7 +38,7 @@ test('count', function(t){
   });
 
   tilereduce.on('end', function(){
-    t.true(totalLines > 25000, 'should be > 25000 lines')
+    t.true(totalLines > 25000, 'should be > 25000 lines');
     t.pass('tilereduce completed');
     t.end();
   });
