@@ -1,7 +1,5 @@
 var test = require('tape');
 var TileReduce = require('../../');
-var count = require('./count.js');
-var turf = require('turf');
 
 test('count', function(t){
   var bbox = [

@@ -1,6 +1,5 @@
 var test = require('tape');
 var TileReduce = require('../../');
-var count = require('./miles.js');
 
 test('mile count', function(t){
   var bbox = [
