@@ -1,22 +1,31 @@
 # tile-reduce
 
+[![Build Status](https://travis-ci.org/mapbox/tile-reduce.svg)](https://travis-ci.org/mapbox/tile-reduce)
+
 *Note: This module is under heavy development and is changing fast*
 
 [MapReduce](http://en.wikipedia.org/wiki/MapReduce) geoprocessing across tiles
 
+##install
+
+```sh
+npm install tile-reduce
+```
+
 ##example
+
+This example takes a selection of OpenStreetMap roads from Mapbox Streets, buffers them, and pipes the output to tippecanoe.
 
 ###run
 
 ```sh
-node index.js | tippecanoe -o diff.mbtiles
+node index.js | tippecanoe -o buffer.mbtiles
 ```
 
 ###index.js
 
 ```js
-var tilereduce = new require('tile-reduce')();
-var diff = require('diff');
+var TileReduce = new require('tile-reduce');
 
 var bbox = [
     -80.13702392578125,
@@ -31,48 +40,34 @@ var opts = {
       {
         name: 'streets',
         url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf',
-        layers: ['roads', 'tunnel', 'bridge']
-      },
-      {
-        name: 'tiger',
-        url: 'https://a.tiles.mapbox.com/v4/tiger/{z}/{x}/{y}.vector.pbf',
-        layers: ['routes']
+        layers: ['roads']
       }
     ],
-  map: diff
+  map: __dirname+'/buffer.js'
 };
 
-tilereduce.on('start', function(tiles){
-  console.log('{"type":"FeatureCollection","features":[')
+var tilereduce = TileReduce(bbox, opts);
+
+tilereduce.on('reduce', function(result){
+  console.log(JSON.stringify(result));
 });
 
-tilereduce.on('reduce', function(result, tile){
-  console.log(JSON.stringify(result.features));
-});
-
-tilereduce.on('end', function(error){
-  console.log(']}');
-});
-
-tilereduce.on('error', function(error){
-  throw error;
-});
-
-tilereduce(bbox, opts);
+tilereduce.run();
 ```
 
-###diff.js
+###buffer.js
 
 ```js
 var turf = require('turf');
 
 module.exports = function (tileLayers, opts){
   var roads = tileLayers.streets.roads;
-  roads.features = roads.features.map(function(road){
-    return turf.buffer(road, 50, 'feet');
-  });
-  var routes = tileLayers.tiger.routes;
-  routes = turf.erase(roads, routes);
-  return routes;
+  return turf.buffer(roads, 20, 'meters');
 }
+```
+
+##test
+
+```sh
+npm test
 ```

@@ -1,6 +1,6 @@
 {
-  "name": "vt-mapreduce",
-  "version": "1.0.0",
+  "name": "tile-reduce",
+  "version": "0.1.0",
   "description": "vector tile mapreduce",
   "main": "index.js",
   "directories": {
@@ -11,14 +11,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/mapbox/vt-mapreduce.git"
+    "url": "https://github.com/mapbox/tile-reduce.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/mapbox/vt-mapreduce/issues"
+    "url": "https://github.com/mapbox/tile-reduce/issues"
   },
-  "homepage": "https://github.com/mapbox/vt-mapreduce",
+  "homepage": "https://github.com/mapbox/tile-reduce",
   "devDependencies": {
     "glob": "^5.0.3",
     "tape": "^3.5.0"
