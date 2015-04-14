@@ -40,7 +40,8 @@ test('count', function(t){
   });
 
   tilereduce.on('end', function(){
-    t.true(miles > 135, Math.round(miles * 100)/100 + ' miles is greater than 135 miles');
+    var minMiles = 115;
+    t.true(miles > minMiles, Math.round(miles * 100)/100 + ' miles is greater than ' + minMiles + ' miles');
     t.pass('tilereduce completed');
     t.end();
   });
