@@ -13,12 +13,7 @@ module.exports = function (coverArea, opts){
   var ee = new EventEmitter();
 
   // compute cover
-  if(coverArea instanceof Array){
-    if(coverArea.length === 3) coverArea = tilebelt.tileToBBOX(coverArea);
-    coverArea = turf.bboxPolygon(coverArea);
-  }
-
-  var tiles = cover.tiles(coverArea.geometry, {min_zoom: opts.zoom, max_zoom: opts.zoom});
+  var tiles = computeCover(coverArea, opts.zoom);
 
   // send back tiles that will be processed
   setTimeout(function(){
@@ -66,3 +61,66 @@ module.exports = function (coverArea, opts){
 
   return ee;
 };
+
+function computeCover (coverArea, zoom) {
+  if(coverArea instanceof Array && isValidTile(coverArea[0])) {
+    // array of tiles
+    return tilesToZoom(coverArea, zoom);
+  } else if(isValidTile(coverArea)) {
+    // single tile
+    if(coverArea[2] === zoom) return coverArea
+    else return tilesToZoom([coverArea], zoom);
+  } else if(coverArea instanceof Array && coverArea.length === 4) {
+    // bbox
+    var poly = turf.bboxPolygon(coverArea);
+    return cover.tiles(poly.geometry, {min_zoom: zoom, max_zoom: zoom});
+  } else if(coverArea.type === 'Feature') {
+    // GeoJSON Feature or FeatureCollection
+    return cover.tiles(coverArea.geometry, {min_zoom: zoom, max_zoom: zoom});
+  } else {
+    throw new Error('Unrecognized cover type');
+  }
+}
+
+function isValidTile (tile) {
+  if(tile instanceof Array &&
+    tile.length === 3 &&
+    typeof tile[0] === 'number' &&
+    typeof tile[0] === 'number' &&
+    typeof tile[0] === 'number') return true;
+  else return false;
+}
+
+function tilesToZoom(tiles, zoom) {
+  var newTiles = zoomTiles(tiles, zoom);
+  return newTiles
+
+  function zoomTiles(zoomedTiles) {
+    if(zoomedTiles[0][2] === zoom){
+      return zoomedTiles;
+    } else if(zoomedTiles[0][2] < zoom){
+      var oneIn = [];
+      zoomedTiles.forEach(function(tile){
+        oneIn = oneIn.concat(tilebelt.getChildren(tile));
+      });
+      return zoomTiles(oneIn);
+    } else {
+      var zoomedTiles = zoomedTiles.map(function(tile){
+        var centroid =
+          turf.centroid(
+            turf.bboxPolygon(
+              tilebelt.tileToBBOX(tile)
+            )
+          );
+        return tilebelt.pointToTile(
+          centroid.geometry.coordinates[0],
+          centroid.geometry.coordinates[1], zoom);
+      });
+      return zoomedTiles;
+    }
+  }
+}
+
+module.exports.computeCover = computeCover;
+module.exports.isValidTile = isValidTile;
+module.exports.tilesToZoom = tilesToZoom;

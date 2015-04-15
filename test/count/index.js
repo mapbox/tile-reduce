@@ -1,7 +1,7 @@
 var test = require('tape');
 var TileReduce = require('../../');
 
-test('count', function(t){
+test('road count', function(t){
   var bbox = [
     -77.16350555419922,
     38.81135594620186,
