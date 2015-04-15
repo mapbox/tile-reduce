@@ -1,5 +1,6 @@
 var EventEmitter = require("events").EventEmitter;
 var cover = require('tile-cover');
+var tilebelt = require('tilebelt');
 var turf = require('turf');
 var browserify = require('browserify');
 var exec = require('child_process').execSync;
@@ -12,7 +13,11 @@ module.exports = function (coverArea, opts){
   var ee = new EventEmitter();
 
   // compute cover
-  if(coverArea instanceof Array) coverArea = turf.bboxPolygon(coverArea);
+  if(coverArea instanceof Array){
+    if(coverArea.length === 3) coverArea = tilebelt.tileToBBOX(coverArea);
+    coverArea = turf.bboxPolygon(coverArea);
+  }
+
   var tiles = cover.tiles(coverArea.geometry, {min_zoom: opts.zoom, max_zoom: opts.zoom});
 
   // send back tiles that will be processed
