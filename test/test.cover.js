@@ -10,6 +10,7 @@ test('computeCover', function(t){
 
   // tile
   var exactTile = computeCover([9372,12536,15], zoom);
+  t.equal(exactTile.length, 1);
   t.equal(exactTile.toString(), [9372,12536,15].toString());
   var lowTiles = computeCover([4686,6268,14], zoom);
   t.equal(lowTiles.length, 4, 'should have 4 children tiles');
