@@ -10,7 +10,6 @@ test('computeCover', function(t){
 
   // tile
   var exactTile = computeCover([9372,12536,15], zoom);
-  console.log(exactTile)
   t.equal(exactTile.length, 1);
   t.equal(exactTile.toString(), [9372,12536,15].toString());
   var lowTiles = computeCover([4686,6268,14], zoom);
