@@ -2,7 +2,7 @@ var turf = require('turf');
 var normalize = require('geojson-normalize');
 var flatten = require('geojson-flatten');
 
-module.exports = function(tileLayers, opts){
+module.exports = function(tileLayers, opts, done){
   var streets = normalize(tileLayers.streets.road);
   streets.features = streets.features.concat(normalize(flatten(tileLayers.streets.bridge)).features);
   streets.features = streets.features.concat(normalize(flatten(tileLayers.streets.tunnel)).features);
@@ -27,5 +27,5 @@ module.exports = function(tileLayers, opts){
     }
   });
 
-  return miles;
+  done(null, miles);
 };

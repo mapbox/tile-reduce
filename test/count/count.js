@@ -1,4 +1,4 @@
-module.exports = function(tileLayers, opts){
+module.exports = function(tileLayers, opts, done){
   var streetsRoads = tileLayers.streets.road;
-  return streetsRoads.features.length;
+  done(null, streetsRoads.features.length);
 };
