@@ -68,7 +68,7 @@ function computeCover (coverArea, zoom) {
     return tilesToZoom(coverArea, zoom);
   } else if(isValidTile(coverArea)) {
     // single tile
-    if(coverArea[2] === zoom) return coverArea
+    if(coverArea[2] === zoom) return [coverArea];
     else return tilesToZoom([coverArea], zoom);
   } else if(coverArea instanceof Array && coverArea.length === 4) {
     // bbox
@@ -93,7 +93,7 @@ function isValidTile (tile) {
 
 function tilesToZoom(tiles, zoom) {
   var newTiles = zoomTiles(tiles, zoom);
-  return newTiles
+  return newTiles;
 
   function zoomTiles(zoomedTiles) {
     if(zoomedTiles[0][2] === zoom){
