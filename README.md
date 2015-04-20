@@ -60,9 +60,10 @@ tilereduce.run();
 ```js
 var turf = require('turf');
 
-module.exports = function (tileLayers, opts){
+module.exports = function (tileLayers, opts, done){
   var roads = tileLayers.streets.roads;
-  return turf.buffer(roads, 20, 'meters');
+  var bufferedRoad = turf.buffer(roads, 20, 'meters')
+  done(null, bufferedRoad);
 }
 ```
 

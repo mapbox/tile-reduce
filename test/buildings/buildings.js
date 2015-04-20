@@ -1,3 +1,3 @@
-module.exports = function(tileLayers, opts){
-  return tileLayers.streets.building.features.length;
+module.exports = function(tileLayers, opts, done){
+  done(null, tileLayers.streets.building.features.length);
 };

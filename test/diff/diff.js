@@ -3,7 +3,7 @@ var turf = require('turf'),
   normalize = require('geojson-normalize'),
   tilebelt = require('tilebelt');
 
-module.exports = function(tileLayers, tile) {
+module.exports = function(tileLayers, tile, done) {
   // concat feature classes and normalize data
   var tigerRoads = normalize(tileLayers.tiger.tiger20062014);
   var streets = normalize(tileLayers.streets.road);
@@ -33,11 +33,11 @@ module.exports = function(tileLayers, tile) {
   });
   tigerDeltas = normalize(flatten(tigerDeltas));
 
-  return {
+  done(null, {
     diff: tigerDeltas,
     tiger: tigerRoads,
     streets: streets
-  };
+  });
 };
 
 function clip(lines, tile) {

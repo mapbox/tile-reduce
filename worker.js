@@ -20,8 +20,9 @@ process.on('message', function(data) {
             layerCollection[item.name][layer] = item[layer];
           });
         });
-        var message = mapOperation(layerCollection, tile);
-        process.send(message);
+        mapOperation(layerCollection, tile, function(err, message){
+          process.send(message);
+        });
       } else {
         process.send(0);
       }

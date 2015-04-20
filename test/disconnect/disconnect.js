@@ -3,7 +3,7 @@ var turf = require('turf');
 var tilebelt = require('tilebelt');
 var flatten = require('geojson-flatten');
 
-module.exports = function(tileLayers, tile){
+module.exports = function(tileLayers, tile, done){
   var bbox = tilebelt.tileToBBOX(tile);
   var minDistance = 50/5280; // 50 ft in miles
   var disconnects = turf.featurecollection([]);
@@ -137,5 +137,5 @@ module.exports = function(tileLayers, tile){
   });
   
   // return points where distance is less than 50 feet
-  return disconnects;
+  done(null, disconnects);
 };
