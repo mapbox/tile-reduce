@@ -43,7 +43,7 @@ module.exports = function (coverArea, opts){
   }
 
   ee.run = function () {
-    var ratequeue = rateLimit.createQueue({interval: 10});
+    var ratequeue = rateLimit.createQueue({interval: 20});
     tiles.forEach(function(tile, i){
       ratequeue.add(function(){
         workers[getRandomInt(0, cpus-1)].send({
