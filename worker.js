@@ -23,7 +23,7 @@ process.on('message', function(data) {
       qq.defer(getMbtiles, tl.mbtiles, function(err) {
         if (err) return console.log('mbtiles error', err);
         var dbPath = './' + path.basename(tl.mbtiles);
-        dbs[tl.name] = new sqlite.Database(dbPath, 'sqlite3.OPEN_READONLY', function(err) {
+        dbs[tl.name] = new sqlite.Database(dbPath, function(err) {
           if (err) return console.log('mbtiles error', err);
           console.log('processing tiles');
         });
@@ -90,12 +90,10 @@ function getVectorTile(tile, tileLayer, done){
   };
 
   if (tileLayer.mbtiles) {
-    // hit mbtiles
     console.log('hit', tileLayer.name, tile);
-
-    // tileLayer.mbtiles.run('', function(err, results) {
-    //   featureTile(result, tileLayer.layers, done);
-    // });
+    dbs[tileLayer.name].get('select tile_data from tiles;', function(err, row) {
+      featureTile(row.tile_data, tileLayer.layers, done);
+    });
   } else {
     var url = tileLayer.url.split('{x}').join(tile[0]);
     url = url.split('{y}').join(tile[1]);
