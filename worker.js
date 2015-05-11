@@ -8,29 +8,45 @@ var fs = require('fs');
 var path = require('path');
 var http = require('http');
 
+var dbs = {};
+
 process.on('message', function(data) {
   var mapOperation = require(data.opts.map);
-  var db;
+  var mbtiles;
+  var qq = queue(4);
 
-  if (data.opts.tileLayers.mbtiles) {
-    getMbtiles(data.opts.tileLayers.mbtiles, function(err) {
-      if (err) return console.log('mbtiles error', err);
-      var dbPath = './' + path.basename(data.opts.tileLayers.mbtiles);
-      data.opts.tileLayers.mbtiles = new sqlite.Database(dbPath, 'sqlite3.OPEN_READONLY', function(err) {
+  data.opts.tileLayers.forEach(function(tl) {
+    // get and connect to any sqlite databases needed
+    console.log(tl.name);
+    if (tl.mbtiles) {
+      mbtiles = true;
+      qq.defer(getMbtiles, tl.mbtiles, function(err) {
         if (err) return console.log('mbtiles error', err);
-        processTiles(data.tiles);
+        var dbPath = './' + path.basename(tl.mbtiles);
+        dbs[tl.name] = new sqlite.Database(dbPath, 'sqlite3.OPEN_READONLY', function(err) {
+          if (err) return console.log('mbtiles error', err);
+          console.log('processing tiles');
+        });
       });
+    }
+  });
+
+  if (mbtiles) {
+    qq.awaitAll(function(err, res) {
+      console.log('all sqlite databases initialized');
+      processTiles(data.tiles, data.opts.tileLayers);
     });
   } else {
-    processTiles(data.tiles);
+    processTiles(data.tiles, data.opts.tileLayers);
   }
+
 });
 
-function processTiles(tiles) {
+function processTiles(tiles, tileLayers, done) {
   tiles.forEach(function(tile){
     var layerCollection = {};
     var q = queue(4);
-    data.opts.tileLayers.forEach(function(tileLayer){
+    tileLayers.forEach(function(tileLayer){
       q.defer(getVectorTile, tile, tileLayer);
     });
     q.awaitAll(function(err, res){
@@ -42,22 +58,27 @@ function processTiles(tiles) {
           });
         });
         mapOperation(layerCollection, tile, function(err, message){
+          done();
           process.send(message);
         });
       } else {
+        done();
         process.send(0);
       }
     });
   });
 }
 
-function getMbtiles(url, cb) {
+function getMbtiles(url, cb, done) {
   fs.exists('./' + path.basename(url), function(exists) {
     if (!exists) {
       console.log('downloading', url);
       // download the file to the local dir
+      cb();
+      done();
     } else {
       cb();
+      done();
     }
   });
 }
@@ -70,6 +91,8 @@ function getVectorTile(tile, tileLayer, done){
 
   if (tileLayer.mbtiles) {
     // hit mbtiles
+    console.log('hit', tileLayer.name, tile);
+
     // tileLayer.mbtiles.run('', function(err, results) {
     //   featureTile(result, tileLayer.layers, done);
     // });

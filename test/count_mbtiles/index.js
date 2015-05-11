@@ -10,13 +10,11 @@ test('road count', function(t){
   ];
   var opts = {
     zoom: 12,
-    tileLayers: [
-        {
-          name: 'streets',
-          mbtiles: 'some_url_to_download',
-          layers: ['road']
-        }
-      ],
+    tileLayers: [{
+      name: 'streets',
+      mbtiles: 'http://asdklasdklj.com/mapbox.mapbox-streets-v5.mbtiles',
+      layers: ['road']
+    }],
     map: __dirname+'/count.js'
   };
 
