@@ -8,11 +8,13 @@ test('road count', function(t){
     -76.9379425048828,
     38.965815660189016
   ];
+  // var tile = [4687, 6269, 14];
   var opts = {
-    zoom: 12,
+    zoom: 14,
     tileLayers: [{
       name: 'streets',
-      mbtiles: 'http://asdklasdklj.com/mapbox.mapbox-streets-v5.mbtiles',
+      mbtiles: 'http://asdklasdklj.com/here.tiles.mbtiles',
+      url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.png?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
       layers: ['road']
     }],
     map: __dirname+'/count.js'

@@ -16,16 +16,14 @@ process.on('message', function(data) {
   var qq = queue(4);
 
   data.opts.tileLayers.forEach(function(tl) {
-    // get and connect to any sqlite databases needed
-    console.log(tl.name);
     if (tl.mbtiles) {
       mbtiles = true;
-      qq.defer(getMbtiles, tl.mbtiles, function(err) {
+      qq.defer(getMbtiles, tl.mbtiles, function(err, done) {
         if (err) return console.log('mbtiles error', err);
         var dbPath = './' + path.basename(tl.mbtiles);
         dbs[tl.name] = new sqlite.Database(dbPath, function(err) {
-          if (err) return console.log('mbtiles error', err);
           console.log('processing tiles');
+          done(err);
         });
       });
     }
@@ -33,7 +31,6 @@ process.on('message', function(data) {
 
   if (mbtiles) {
     qq.awaitAll(function(err, res) {
-      console.log('all sqlite databases initialized');
       processTiles(data.tiles, data.opts.tileLayers);
     });
   } else {
@@ -58,11 +55,11 @@ function processTiles(tiles, tileLayers, done) {
           });
         });
         mapOperation(layerCollection, tile, function(err, message){
-          done();
+          if (done) done();
           process.send(message);
         });
       } else {
-        done();
+        if (done) done();
         process.send(0);
       }
     });
@@ -71,14 +68,13 @@ function processTiles(tiles, tileLayers, done) {
 
 function getMbtiles(url, cb, done) {
   fs.exists('./' + path.basename(url), function(exists) {
+    var err = null;
     if (!exists) {
       console.log('downloading', url);
-      // download the file to the local dir
-      cb();
-      done();
+      // we'll download the file to the local dir here
+      cb(err, done);
     } else {
-      cb();
-      done();
+      cb(err, done);
     }
   });
 }
@@ -91,8 +87,12 @@ function getVectorTile(tile, tileLayer, done){
 
   if (tileLayer.mbtiles) {
     console.log('hit', tileLayer.name, tile);
-    dbs[tileLayer.name].get('select tile_data from tiles;', function(err, row) {
-      featureTile(row.tile_data, tileLayer.layers, done);
+    var query = 'select tile_data from tiles where zoom_level = ' + tile[2] + ' and tile_column = ' + tile[0] + ' and tile_row = ' + tile[1] +';';
+    dbs[tileLayer.name].get(query, function(err, row) {
+      if (err) return console.log(err);
+      if (row) {
+        featureTile(row.tile_data, tileLayer.layers, done);
+      }
     });
   } else {
     var url = tileLayer.url.split('{x}').join(tile[0]);
@@ -120,7 +120,7 @@ function featureTile(data, layers, cb) {
     cb(e, null);
   }
 
-  tileLayer.layers.forEach(function(layer){
+  layers.forEach(function(layer){
     layers[layer] = turf.featurecollection([]);
     if (vt && vt.layers[layer]) {
       for (var i = 0; i < vt.layers[layer].length; i++) {
