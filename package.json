@@ -31,6 +31,7 @@
     "queue-async": "^1.0.7",
     "rate-limit": "^0.1.1",
     "request": "^2.54.0",
+    "sqlite3": "^3.0.8",
     "tile-cover": "^2.4.1",
     "tilebelt": "^0.7.1",
     "turf": "2.0.2",
