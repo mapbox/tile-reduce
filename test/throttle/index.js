@@ -6,13 +6,14 @@ test('throttle', function(t){
   var requests = 0;
   var persec = 0;
   var interval = setInterval(function(){
+    t.pass(persec)
     persec = 0;
   },1000);
 
   var server = http.createServer(function (req, res) {
     requests++;
     persec++;
-    if(persec > 200) t.fail(persec+' requests per second');
+    if(persec > 400) t.fail(persec+' requests per second');
     res.end();
   });
 
