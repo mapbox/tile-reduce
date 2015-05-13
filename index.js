@@ -6,6 +6,7 @@ var browserify = require('browserify');
 var exec = require('child_process').execSync;
 var fork = require('child_process').fork;
 var cpus = require('os').cpus().length;
+var rateLimit = require("rate-limit");
 
 module.exports = function (coverArea, opts){
   var workers = [];
@@ -42,21 +43,15 @@ module.exports = function (coverArea, opts){
   }
 
   ee.run = function () {
-    // split tiles into chunks
-    var chunks = [];
-    for (var i = 0; i < cpus; i++) {
-      chunks.push([]);
-    }
+    var ratequeue = rateLimit.createQueue({interval: 10 * opts.tileLayers.length});
     tiles.forEach(function(tile, i){
-      chunks[i % cpus].push(tile);
-    });
-    for (var i = 0; i < cpus; i++) {
-      // send each worker a chunk of tiles
-      workers[i].send({
-        tiles: chunks[i % cpus],
-        opts: opts
+      ratequeue.add(function(){
+        workers[getRandomInt(0, cpus-1)].send({
+          tiles: [tile],
+          opts: opts
+        });
       });
-    }
+    });
   };
 
   return ee;
@@ -119,6 +114,10 @@ function tilesToZoom(tiles, zoom) {
       return zoomedTiles;
     }
   }
+}
+
+function getRandomInt (min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 module.exports.computeCover = computeCover;
