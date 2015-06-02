@@ -13,7 +13,7 @@ test('throttle', function(t){
   var server = http.createServer(function (req, res) {
     requests++;
     persec++;
-    if(persec > 1) t.fail(persec+' requests per second');
+    if(persec > 2) t.fail(persec+' requests per second');
     res.end();
   });
 
@@ -28,7 +28,7 @@ test('throttle', function(t){
 
     var opts = {
       zoom: 12,
-      maxrate: 2000,
+      maxrate: 1,
       tileLayers: [
           {
             name: 'streets',
@@ -43,7 +43,7 @@ test('throttle', function(t){
 
     tilereduce.on('start', function(tiles){
       t.pass('tilereduce started');
-      t.equal(tiles.length, 12, '36 tiles covered');
+      t.equal(tiles.length, 12, '12 tiles covered');
       var allValid = tiles.every(function(tile){
         return tile.length === 3;
       });
