@@ -28,7 +28,7 @@ test('throttle', function(t){
 
     var opts = {
       zoom: 13,
-      maxrate: 200,
+      maxrate: 300,
       tileLayers: [
           {
             name: 'streets',
