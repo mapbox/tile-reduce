@@ -9,6 +9,8 @@ var cpus = require('os').cpus().length;
 var rateLimit = require("rate-limit");
 
 module.exports = function (coverArea, opts){
+  var maxrate = 10
+  if(opts.maxrate > maxrate) maxrate = opts.maxrate
   var workers = [];
   var tilesCompleted = 0;
   var ee = new EventEmitter();
@@ -43,7 +45,7 @@ module.exports = function (coverArea, opts){
   }
 
   ee.run = function () {
-    var ratequeue = rateLimit.createQueue({interval: 10 * opts.tileLayers.length});
+    var ratequeue = rateLimit.createQueue({interval: maxrate * opts.tileLayers.length});
     tiles.forEach(function(tile, i){
       ratequeue.add(function(){
         workers[getRandomInt(0, cpus-1)].send({
