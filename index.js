@@ -9,9 +9,6 @@ var cpus = require('os').cpus().length;
 var rateLimit = require('function-rate-limit');
 
 module.exports = function (coverArea, opts){
-  var maxrate = 200;
-  if(opts.maxrate < maxrate) maxrate = opts.maxrate;
-  var throttle = 1000 / maxrate;
   var workers = [];
   var tilesCompleted = 0;
   var ee = new EventEmitter();
@@ -46,14 +43,15 @@ module.exports = function (coverArea, opts){
   }
 
   ee.run = function () {
-    sendTiles(workers, tiles, cpus, maxrate, opts);
+    sendTiles(tiles, workers, opts);
   };
 
   return ee;
 };
 
-function sendTiles (maxrate, workers, tiles, opts) {
-  var sendTile = rateLimit(maxrate / opts.tileLayers.length, 1000, function(tile){
+function sendTiles (tiles, workers, opts) {
+  if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
+  var sendTile = rateLimit(opts.maxrate / opts.tileLayers.length, 1000, function(tile){
     workers[getRandomInt(0, workers.length-1)].send({
       tiles: [tile],
       opts: opts
