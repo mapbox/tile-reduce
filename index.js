@@ -46,19 +46,23 @@ module.exports = function (coverArea, opts){
   }
 
   ee.run = function () {
-    var sendTile = rateLimit(maxrate / opts.tileLayers.length, 1000, function(tile){
-      workers[getRandomInt(0, cpus-1)].send({
-        tiles: [tile],
-        opts: opts
-      })
-    })
-    tiles.forEach(function(tile){
-      sendTile(tile);
-    });
+    sendTiles(workers, tiles, cpus, maxrate, opts);
   };
 
   return ee;
 };
+
+function sendTiles (maxrate, workers, tiles, opts) {
+  var sendTile = rateLimit(maxrate / opts.tileLayers.length, 1000, function(tile){
+    workers[getRandomInt(0, workers.length-1)].send({
+      tiles: [tile],
+      opts: opts
+    });
+  });
+  tiles.forEach(function(tile){
+    sendTile(tile);
+  });
+}
 
 function computeCover (coverArea, zoom) {
   if(coverArea instanceof Array && isValidTile(coverArea[0])) {
@@ -126,3 +130,4 @@ function getRandomInt (min, max) {
 module.exports.computeCover = computeCover;
 module.exports.isValidTile = isValidTile;
 module.exports.tilesToZoom = tilesToZoom;
+module.exports.sendTiles = sendTiles;

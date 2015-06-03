@@ -28,8 +28,8 @@ test('computeCover', function(t){
   // tiles
 
   // bbox
-  var bbox = [-77.117,38.850,-76.975,38.968]
-  var bboxTiles = computeCover(bbox, zoom)
+  var bbox = [-77.117,38.850,-76.975,38.968];
+  var bboxTiles = computeCover(bbox, zoom);
   t.equal(bboxTiles.length, 210, 'bbox contains 210 z15 tiles');
   t.true(isValidTile(bboxTiles[0]), 'valid tile');
   t.true(isValidTile(bboxTiles[1]), 'valid tile');
@@ -68,7 +68,7 @@ test('computeCover', function(t){
       ]
     }
   };
-  var polyTiles = computeCover(polygon, zoom)
+  var polyTiles = computeCover(polygon, zoom);
   t.equal(polyTiles.length, 210, 'polygon contains 210 z15 tiles');
   t.true(isValidTile(polyTiles[0]), 'valid tile');
   t.true(isValidTile(polyTiles[1]), 'valid tile');
@@ -76,7 +76,7 @@ test('computeCover', function(t){
   t.true(isValidTile(bboxTiles[polyTiles.length-1]), 'valid tile');
 
   try {
-    computeCover(turf.featurecollection([]), zoom)
+    computeCover(turf.featurecollection([]), zoom);
   } catch(err){
     t.equal(err.toString(), 'Error: Unrecognized cover type', 'throw error with bad cover');
   }
