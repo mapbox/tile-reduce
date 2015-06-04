@@ -6,7 +6,7 @@ var browserify = require('browserify');
 var exec = require('child_process').execSync;
 var fork = require('child_process').fork;
 var cpus = require('os').cpus().length;
-var rateLimit = require("rate-limit");
+var rateLimit = require('function-rate-limit');
 
 module.exports = function (coverArea, opts){
   var workers = [];
@@ -43,19 +43,24 @@ module.exports = function (coverArea, opts){
   }
 
   ee.run = function () {
-    var ratequeue = rateLimit.createQueue({interval: 10 * opts.tileLayers.length});
-    tiles.forEach(function(tile, i){
-      ratequeue.add(function(){
-        workers[getRandomInt(0, cpus-1)].send({
-          tiles: [tile],
-          opts: opts
-        });
-      });
-    });
+    sendTiles(tiles, workers, opts);
   };
 
   return ee;
 };
+
+function sendTiles (tiles, workers, opts) {
+  if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
+  var sendTile = rateLimit(opts.maxrate / opts.tileLayers.length, 1000, function(tile){
+    workers[getRandomInt(0, workers.length-1)].send({
+      tiles: [tile],
+      opts: opts
+    });
+  });
+  tiles.forEach(function(tile){
+    sendTile(tile);
+  });
+}
 
 function computeCover (coverArea, zoom) {
   if(coverArea instanceof Array && isValidTile(coverArea[0])) {
@@ -123,3 +128,4 @@ function getRandomInt (min, max) {
 module.exports.computeCover = computeCover;
 module.exports.isValidTile = isValidTile;
 module.exports.tilesToZoom = tilesToZoom;
+module.exports.sendTiles = sendTiles;
