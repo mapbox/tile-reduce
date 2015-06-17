@@ -24,7 +24,6 @@
     "tape": "^3.5.0"
   },
   "dependencies": {
-    "browserify": "^9.0.8",
     "function-rate-limit": "^1.0.1",
     "geojson-flatten": "^0.1.0",
     "geojson-normalize": "0.0.0",
