@@ -6,23 +6,23 @@
 
 [MapReduce](http://en.wikipedia.org/wiki/MapReduce) geoprocessing across tiles
 
-##install
+## install
 
 ```sh
 npm install tile-reduce
 ```
 
-##example
+## example
 
 This example takes a selection of OpenStreetMap roads from Mapbox Streets, buffers them, and pipes the output to tippecanoe.
 
-###run
+### run
 
 ```sh
 node index.js | tippecanoe -o buffer.mbtiles
 ```
 
-###index.js
+### index.js
 
 ```js
 var TileReduce = new require('tile-reduce');
@@ -55,7 +55,7 @@ tilereduce.on('reduce', function(result){
 tilereduce.run();
 ```
 
-###buffer.js
+### buffer.js
 
 ```js
 var turf = require('turf');
@@ -67,7 +67,7 @@ module.exports = function (tileLayers, opts, done){
 }
 ```
 
-##test
+## test
 
 ```sh
 npm test
