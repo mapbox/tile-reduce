@@ -5,6 +5,10 @@ var turf = require('turf');
 var fork = require('child_process').fork;
 var cpus = require('os').cpus().length;
 var rateLimit = require('function-rate-limit');
+var queue = require('queue-async');\
+var request = require('request');
+var VectorTile = require('vector-tile').VectorTile;
+var Pbf = require('pbf');
 
 module.exports = function (coverArea, opts){
   var workers = [];
@@ -41,22 +45,77 @@ module.exports = function (coverArea, opts){
   }
 
   ee.run = function () {
-    sendTiles(tiles, workers, opts);
+    if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
+    var getData = rateLimit(opts.maxrate / opts.tileLayers.length, 1000, function(tile){
+      var layerCollection = {};
+      var q = queue(4);
+      opts.tileLayers.forEach(function(tileLayer){
+        q.defer(getVectorTile, tile, tileLayer);
+      });
+      q.awaitAll(function(err, res){
+        if(res){
+          res.forEach(function(item){
+            item.layers.forEach(function(layer){
+              if(!layerCollection[item.name]) layerCollection[item.name] = {};
+              layerCollection[item.name][layer] = item[layer];
+            });
+          });
+          sendData(layerCollection, tile, workers, opts);
+        }
+      });
+    });
+    tiles.forEach(function(tile){
+      getData(tile);
+    });
   };
 
   return ee;
 };
 
-function sendTiles (tiles, workers, opts) {
-  if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
-  var sendTile = rateLimit(opts.maxrate / opts.tileLayers.length, 1000, function(tile){
-    workers[getRandomInt(0, workers.length-1)].send({
-      tiles: [tile],
-      opts: opts
+function getVectorTile(tile, tileLayer, done){
+  var layers = {
+    name:tileLayer.name,
+    layers:tileLayer.layers
+  };
+
+  var url = tileLayer.url.split('{x}').join(tile[0]);
+  url = url.split('{y}').join(tile[1]);
+  url = url.split('{z}').join(tile[2]);
+
+  var requestOpts = {
+    url: url,
+    gzip: true,
+    encoding: null
+  };
+  request(requestOpts, function(err, res, body) {
+    var vt;
+    try {
+      vt = new VectorTile(new Pbf(new Uint8Array(body)));
+    } catch(e){
+      done(e, null);
+    }
+    tileLayer.layers.forEach(function(layer){
+      layers[layer] = turf.featurecollection([]);
+      if(vt && vt.layers[layer]){
+        for(var i = 0; i < vt.layers[layer].length; i++){
+          try {
+            layers[layer].features.push(vt.layers[layer].feature(i).toGeoJSON(tile[0],tile[1],tile[2]));
+          } catch(e){
+            done(e, null);
+          }
+        }
+      }
     });
+
+    done(null, layers);
   });
-  tiles.forEach(function(tile){
-    sendTile(tile);
+}
+
+function sendData (collection, tile, workers, opts) {
+  workers[getRandomInt(0, workers.length-1)].send({
+    tile: tile,
+    collection: collection,
+    opts: opts
   });
 }
 
@@ -127,3 +186,5 @@ module.exports.computeCover = computeCover;
 module.exports.isValidTile = isValidTile;
 module.exports.tilesToZoom = tilesToZoom;
 module.exports.sendTiles = sendTiles;
+module.exports.sendData = sendData;
+module.exports.getVectorTile = getVectorTile;
