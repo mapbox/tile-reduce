@@ -45,28 +45,7 @@ module.exports = function (coverArea, opts){
   }
 
   ee.run = function () {
-    if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
-    var getData = rateLimit(opts.maxrate / opts.tileLayers.length, 1000, function(tile){
-      var layerCollection = {};
-      var q = queue(4);
-      opts.tileLayers.forEach(function(tileLayer){
-        q.defer(getVectorTile, tile, tileLayer);
-      });
-      q.awaitAll(function(err, res){
-        if(res){
-          res.forEach(function(item){
-            item.layers.forEach(function(layer){
-              if(!layerCollection[item.name]) layerCollection[item.name] = {};
-              layerCollection[item.name][layer] = item[layer];
-            });
-          });
-          sendData(layerCollection, tile, workers, opts);
-        }
-      });
-    });
-    tiles.forEach(function(tile){
-      getData(tile);
-    });
+    sendData(tiles, workers, opts);
   };
 
   return ee;
@@ -111,11 +90,32 @@ function getVectorTile(tile, tileLayer, done){
   });
 }
 
-function sendData (collection, tile, workers, opts) {
-  workers[getRandomInt(0, workers.length-1)].send({
-    tile: tile,
-    collection: collection,
-    opts: opts
+function sendData (tiles, workers, opts) {
+  if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
+  var getData = rateLimit(opts.maxrate / opts.tileLayers.length, 1000, function(tile){
+    var layerCollection = {};
+    var q = queue(4);
+    opts.tileLayers.forEach(function(tileLayer){
+      q.defer(getVectorTile, tile, tileLayer);
+    });
+    q.awaitAll(function(err, res){
+      if(res){
+        res.forEach(function(item){
+          item.layers.forEach(function(layer){
+            if(!layerCollection[item.name]) layerCollection[item.name] = {};
+            layerCollection[item.name][layer] = item[layer];
+          });
+        });
+        workers[getRandomInt(0, workers.length-1)].send({
+          tile: tile,
+          collection: layerCollection,
+          opts: opts
+        });
+      }
+    });
+  });
+  tiles.forEach(function(tile){
+    getData(tile);
   });
 }
 
