@@ -185,6 +185,5 @@ function getRandomInt (min, max) {
 module.exports.computeCover = computeCover;
 module.exports.isValidTile = isValidTile;
 module.exports.tilesToZoom = tilesToZoom;
-module.exports.sendTiles = sendTiles;
 module.exports.sendData = sendData;
 module.exports.getVectorTile = getVectorTile;
