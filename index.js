@@ -182,8 +182,22 @@ function getRandomInt (min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function sendTiles (tiles, workers, opts) {
+  if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
+  var sendTile = rateLimit(opts.maxrate / opts.tileLayers.length, 1000, function(tile){
+    workers[getRandomInt(0, workers.length-1)].send({
+      tiles: [tile],
+      opts: opts
+    });
+  });
+  tiles.forEach(function(tile){
+    sendTile(tile);
+  });
+}
+
 module.exports.computeCover = computeCover;
 module.exports.isValidTile = isValidTile;
 module.exports.tilesToZoom = tilesToZoom;
 module.exports.sendData = sendData;
+module.exports.sendTiles = sendTiles;
 module.exports.getVectorTile = getVectorTile;
