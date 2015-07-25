@@ -57,7 +57,7 @@ module.exports = function (coverArea, opts){
 function getRemoteVectorTile(tile, tileLayer, done){
   var url = tileLayer.url.split('{x}').join(tile[0]);
   url = url.split('{y}').join(tile[1]);
-  url = url.split('{z}').join(tile[2])
+  url = url.split('{z}').join(tile[2]);
 
   var requestOpts = {
     url: url,
