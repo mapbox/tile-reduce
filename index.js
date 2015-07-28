@@ -73,10 +73,15 @@ function getLocalVectorTile(tile, tileLayer, dbs, done){
   var tilename = tileLayer.mbtiles.split('.')[0];
 
   dbs[tilename].getTile(tile[2],tile[0],tile[1],function(err, data) {
-    if (err) throw err;
-    zlib.unzip(data, function(err, body) {
-      getTileFeatures(tile, body, tileLayer, done);
-    });
+    if (err == 'Error: Tile does not exist') {
+      getTileFeatures(tile, null, tileLayer, done);
+    } else if (err) {
+      throw err;
+    } else {
+      zlib.unzip(data, function(err, body) {
+        getTileFeatures(tile, body, tileLayer, done);
+      });
+    }
   });
 }
 
@@ -86,11 +91,13 @@ function getTileFeatures(tile, data, tileLayer, cb){
     layers:tileLayer.layers
   };
 
-  var vt;
-  try {
-    vt = new VectorTile(new Pbf(new Uint8Array(data)));
-  } catch(e) {
-    cb(e, null);
+  if (data) {
+    var vt;
+    try {
+      vt = new VectorTile(new Pbf(new Uint8Array(data)));
+    } catch(e) {
+      cb(e, null);
+    }
   }
 
   tileLayer.layers.forEach(function(layer){
