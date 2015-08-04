@@ -9,7 +9,7 @@ test('mile count', function(t){
     tileLayers: [
         {
           name: 'streets',
-          mbtiles: __dirname + 'mi-14-4293-6022.mbtiles',
+          mbtiles: __dirname + '/mi-14-4293-6022.mbtiles',
           layers: ['migeojson']
         }
       ],
