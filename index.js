@@ -71,6 +71,16 @@ function getRemoteVectorTile(tile, tileLayer, done){
 
 function getLocalVectorTile(tile, tileLayer, dbs, done){
   var tilename = tileLayer.mbtiles.split('.')[0];
+  var childTile;
+
+  tileLayer.overzoom = false;
+  tileLayer.underzoom = false;
+
+  if (tileLayer.maxzoom < tile[2]) {
+    tileLayer.overzoom = true;
+    childTile = tile;
+    tile = overzoom(tile, tileLayer.maxzoom);
+  }
 
   dbs[tilename].getTile(tile[2],tile[0],tile[1],function(err, data) {
     if (err == 'Error: Tile does not exist') {
@@ -79,13 +89,21 @@ function getLocalVectorTile(tile, tileLayer, dbs, done){
       throw err;
     } else {
       zlib.unzip(data, function(err, body) {
-        getTileFeatures(tile, body, tileLayer, done);
+        getTileFeatures(tile, body, tileLayer, done, childTile);
       });
     }
   });
 }
 
-function getTileFeatures(tile, data, tileLayer, cb){
+function overzoom(tile, maxzoom){
+  var parentTile = tile;
+  for (i = 0; i < (tile[2] - maxzoom); i++) {
+    parentTile = tilebelt.getParent(parentTile);
+  }
+  return parentTile;
+}
+
+function getTileFeatures(tile, data, tileLayer, cb, childTile){
   var layers = {
     name:tileLayer.name,
     layers:tileLayer.layers
@@ -104,8 +122,25 @@ function getTileFeatures(tile, data, tileLayer, cb){
     layers[layer] = turf.featurecollection([]);
     if (vt && vt.layers[layer]) {
       for (var i = 0; i < vt.layers[layer].length; i++) {
+        f = vt.layers[layer].feature(i).toGeoJSON(tile[0],tile[1],tile[2]);
         try {
-          layers[layer].features.push(vt.layers[layer].feature(i).toGeoJSON(tile[0],tile[1],tile[2]));
+          if (tileLayer.overzoom) {
+            bbox = turf.polygon(tilebelt.tileToGeoJSON(childTile).coordinates);
+
+            if (f.geometry.type === 'Point') {
+              if (turf.inside(f, bbox)) layers[layer].features.push(f);
+            } else {
+              // Clip features of parent tile to child tile
+              var clipped = turf.intersect(f, bbox);
+
+              if (clipped) {
+                clipped.properties = f.properties;
+                layers[layer].features.push(clipped);
+              }
+            }
+          } else {
+            layers[layer].features.push(f);
+          }
         } catch(e) {
           cb(e, null);
         }
@@ -116,11 +151,21 @@ function getTileFeatures(tile, data, tileLayer, cb){
   cb(null, layers);
 }
 
-function loadTiles(mbtile, dbs, done){
-  new MBTiles(mbtile, function(err, src) {
+function loadTiles(tl, dbs, done){
+  new MBTiles(tl.mbtiles, function(err, src) {
     if (err) throw err;
-    dbs[mbtile.split('.')[0]] = src;
-    done(err, null);
+
+    var dbname = tl.mbtiles.split('.')[0];
+    dbs[dbname] = src;
+
+    dbs[dbname].getInfo(function(err, info) {
+      if (err) throw err;
+
+      tl.minzoom = info.minzoom;
+      tl.maxzoom = info.maxzoom;
+
+      done(err, tl);
+    });
   });
 }
 
@@ -156,7 +201,7 @@ function sendData (tiles, workers, opts){
   opts.tileLayers.forEach(function(tl){
     if (tl.url || opts.maxrate) rl = true;
     if (tl.mbtiles) {
-      q.defer(loadTiles, tl.mbtiles, dbs);
+      q.defer(loadTiles, tl, dbs);
     }
   });
   
@@ -167,6 +212,7 @@ function sendData (tiles, workers, opts){
         rateLimit(opts.maxrate / opts.tileLayers.length, 1000, getData(tile));
       });
     } else {
+
       tiles.forEach(function(tile){
         getData(tile);
       });
