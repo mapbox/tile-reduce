@@ -72,27 +72,29 @@ function getRemoteVectorTile(tile, tileLayer, done){
 function getLocalVectorTile(tile, tileLayer, dbs, done){
   var tilename = tileLayer.mbtiles.split('.')[0];
   var childTile;
-
   tileLayer.overzoom = false;
-  tileLayer.underzoom = false;
+
+  var getTile = function(t){
+    dbs[tilename].getTile(t[2],t[0],t[1],function(err, data) {
+      if (err == 'Error: Tile does not exist') {
+        getTileFeatures(t, null, tileLayer, done);
+      } else if (err) {
+        throw err;
+      } else {
+        zlib.unzip(data, function(err, body) {
+          getTileFeatures(t, body, tileLayer, done, childTile);
+        });
+      }
+    });
+  }
 
   if (tileLayer.maxzoom < tile[2]) {
     tileLayer.overzoom = true;
     childTile = tile;
-    tile = overzoom(tile, tileLayer.maxzoom);
+    getTile(overzoom(tile, tileLayer.maxzoom));
+  } else {
+    getTile(tile);
   }
-
-  dbs[tilename].getTile(tile[2],tile[0],tile[1],function(err, data) {
-    if (err == 'Error: Tile does not exist') {
-      getTileFeatures(tile, null, tileLayer, done);
-    } else if (err) {
-      throw err;
-    } else {
-      zlib.unzip(data, function(err, body) {
-        getTileFeatures(tile, body, tileLayer, done, childTile);
-      });
-    }
-  });
 }
 
 function overzoom(tile, maxzoom){
