@@ -70,7 +70,7 @@ function getRemoteVectorTile(tile, tileLayer, done){
 }
 
 function getLocalVectorTile(tile, tileLayer, dbs, done){
-  var tilename = tileLayer.mbtiles.split('.')[0];
+  var tilename = tileLayer.mbtiles.split(/[\\/]/).pop();
   var childTile;
   tileLayer.overzoom = false;
 
@@ -157,7 +157,7 @@ function loadTiles(tl, dbs, done){
   new MBTiles(tl.mbtiles, function(err, src) {
     if (err) throw err;
 
-    var dbname = tl.mbtiles.split('.')[0];
+    var dbname = tl.mbtiles.split(/[\\/]/).pop();
     dbs[dbname] = src;
 
     dbs[dbname].getInfo(function(err, info) {
