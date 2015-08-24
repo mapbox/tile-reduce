@@ -84,8 +84,8 @@ function isValidTile (tile) {
   if(tile instanceof Array &&
     tile.length === 3 &&
     typeof tile[0] === 'number' &&
-    typeof tile[0] === 'number' &&
-    typeof tile[0] === 'number') return true;
+    typeof tile[1] === 'number' &&
+    typeof tile[2] === 'number') return true;
   else return false;
 }
 
