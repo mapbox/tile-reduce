@@ -40,7 +40,7 @@ var opts = {
       {
         name: 'streets',
         url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf',
-        layers: ['roads']
+        layers: ['road']
       }
     ],
   map: __dirname+'/buffer.js'
@@ -61,8 +61,8 @@ tilereduce.run();
 var turf = require('turf');
 
 module.exports = function (tileLayers, opts, done){
-  var roads = tileLayers.streets.roads;
-  var bufferedRoad = turf.buffer(roads, 20, 'meters')
+  var road = tileLayers.streets.road;
+  var bufferedRoad = turf.buffer(road, 20, 'meters');
   done(null, bufferedRoad);
 }
 ```
