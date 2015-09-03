@@ -12,6 +12,36 @@
 npm install tile-reduce
 ```
 
+## supported tile sources
+
+### MBTiles
+
+```
+{
+  name: 'osmdata',
+  mbtiles: __dirname+'/latest.planet.mbtiles',
+  layers: ['osm']
+}
+```
+
+For heavy processing it is best to use local mbtiles.
+
+(Get OSM tiles here: http://osmlab.github.io/osm-qa-tiles/).
+
+### URL
+
+```
+{
+  name: 'streets',
+  url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf',
+  layers: ['roads']
+}
+```
+
+## large areas
+
+Since the tile data is stored in the subprocess' memory, when processing large areas it is best to break it up into smaller pieces and run in serial. A good number to shoot for is 500-1000 tiles at a time.
+
 ## example
 
 This example takes a selection of OpenStreetMap roads from Mapbox Streets, buffers them, and pipes the output to tippecanoe.

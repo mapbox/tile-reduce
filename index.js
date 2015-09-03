@@ -5,11 +5,18 @@ var turf = require('turf');
 var fork = require('child_process').fork;
 var cpus = require('os').cpus().length;
 var rateLimit = require('function-rate-limit');
+var queue = require('queue-async');
+var request = require('request');
+var VectorTile = require('vector-tile').VectorTile;
+var Pbf = require('pbf');
+var MBTiles = require('mbtiles');
+var zlib = require('zlib');
 
 module.exports = function (coverArea, opts){
   var workers = [];
   var tilesCompleted = 0;
   var ee = new EventEmitter();
+  var dbs = {};
 
   // compute cover
   var tiles = computeCover(coverArea, opts.zoom);
@@ -41,22 +48,177 @@ module.exports = function (coverArea, opts){
   }
 
   ee.run = function () {
-    sendTiles(tiles, workers, opts);
+    sendData(tiles, workers, opts);
   };
 
   return ee;
 };
 
-function sendTiles (tiles, workers, opts) {
-  if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
-  var sendTile = rateLimit(opts.maxrate / opts.tileLayers.length, 1000, function(tile){
-    workers[getRandomInt(0, workers.length-1)].send({
-      tiles: [tile],
-      opts: opts
+function getRemoteVectorTile(tile, tileLayer, done){
+  var url = tileLayer.url.split('{x}').join(tile[0]);
+  url = url.split('{y}').join(tile[1]);
+  url = url.split('{z}').join(tile[2]);
+
+  var requestOpts = {
+    url: url,
+    gzip: true,
+    encoding: null
+  };
+  request(requestOpts, function(err, res, body) {
+    getTileFeatures(tile, body, tileLayer, done);
+  });
+}
+
+function getLocalVectorTile(tile, tileLayer, dbs, done){
+  var tilename = tileLayer.mbtiles.split(/[\\/]/).pop();
+  var childTile;
+  tileLayer.overzoom = false;
+
+  var getTile = function(t){
+    dbs[tilename].getTile(t[2],t[0],t[1],function(err, data) {
+      if (err == 'Error: Tile does not exist') {
+        getTileFeatures(t, null, tileLayer, done);
+      } else if (err) {
+        throw err;
+      } else {
+        zlib.unzip(data, function(err, body) {
+          getTileFeatures(t, body, tileLayer, done, childTile);
+        });
+      }
+    });
+  }
+
+  if (tileLayer.maxzoom < tile[2]) {
+    tileLayer.overzoom = true;
+    childTile = tile;
+    getTile(overzoom(tile, tileLayer.maxzoom));
+  } else {
+    getTile(tile);
+  }
+}
+
+function overzoom(tile, maxzoom){
+  var parentTile = tile;
+  for (i = 0; i < (tile[2] - maxzoom); i++) {
+    parentTile = tilebelt.getParent(parentTile);
+  }
+  return parentTile;
+}
+
+function getTileFeatures(tile, data, tileLayer, cb, childTile){
+  var layers = {
+    name:tileLayer.name,
+    layers:tileLayer.layers
+  };
+
+  if (data) {
+    var vt;
+    try {
+      vt = new VectorTile(new Pbf(new Uint8Array(data)));
+    } catch(e) {
+      cb(e, null);
+    }
+  }
+
+  tileLayer.layers.forEach(function(layer){
+    layers[layer] = turf.featurecollection([]);
+    if (vt && vt.layers[layer]) {
+      for (var i = 0; i < vt.layers[layer].length; i++) {
+        f = vt.layers[layer].feature(i).toGeoJSON(tile[0],tile[1],tile[2]);
+        try {
+          if (tileLayer.overzoom) {
+            bbox = turf.polygon(tilebelt.tileToGeoJSON(childTile).coordinates);
+
+            if (f.geometry.type === 'Point') {
+              if (turf.inside(f, bbox)) layers[layer].features.push(f);
+            } else {
+              // Clip features of parent tile to child tile
+              var clipped = turf.intersect(f, bbox);
+
+              if (clipped) {
+                clipped.properties = f.properties;
+                layers[layer].features.push(clipped);
+              }
+            }
+          } else {
+            layers[layer].features.push(f);
+          }
+        } catch(e) {
+          cb(e, null);
+        }
+      }
+    }
+  });
+
+  cb(null, layers);
+}
+
+function loadTiles(tl, dbs, done){
+  new MBTiles(tl.mbtiles, function(err, src) {
+    if (err) throw err;
+
+    var dbname = tl.mbtiles.split(/[\\/]/).pop();
+    dbs[dbname] = src;
+
+    dbs[dbname].getInfo(function(err, info) {
+      if (err) throw err;
+
+      tl.minzoom = info.minzoom;
+      tl.maxzoom = info.maxzoom;
+
+      done(err, tl);
     });
   });
-  tiles.forEach(function(tile){
-    sendTile(tile);
+}
+
+function sendData (tiles, workers, opts){
+  var dbs = {};
+  var rl = false;
+  var q = queue(4);
+
+  var getData = function(tile){
+    var layerCollection = {};
+    var q = queue(4);
+    opts.tileLayers.forEach(function(tileLayer){
+      if (tileLayer.url) q.defer(getRemoteVectorTile, tile, tileLayer);
+      if (tileLayer.mbtiles) q.defer(getLocalVectorTile, tile, tileLayer, dbs);
+    });
+    q.awaitAll(function(err, res){
+      if(res){
+        res.forEach(function(item){
+          item.layers.forEach(function(layer){
+            if(!layerCollection[item.name]) layerCollection[item.name] = {};
+            layerCollection[item.name][layer] = item[layer];
+          });
+        });
+        workers[getRandomInt(0, workers.length-1)].send({
+          tile: tile,
+          collection: layerCollection,
+          opts: opts
+        });
+      }
+    });
+  }
+
+  opts.tileLayers.forEach(function(tl){
+    if (tl.url || opts.maxrate) rl = true;
+    if (tl.mbtiles) {
+      q.defer(loadTiles, tl, dbs);
+    }
+  });
+  
+  q.awaitAll(function(err, res){
+    if (rl) {
+      if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
+      tiles.forEach(function(tile){
+        rateLimit(opts.maxrate / opts.tileLayers.length, 1000, getData(tile));
+      });
+    } else {
+
+      tiles.forEach(function(tile){
+        getData(tile);
+      });
+    }
   });
 }
 
@@ -123,7 +285,25 @@ function getRandomInt (min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function sendTiles (tiles, workers, opts) {
+  if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
+  var sendTile = rateLimit(opts.maxrate / opts.tileLayers.length, 1000, function(tile){
+    workers[getRandomInt(0, workers.length-1)].send({
+      tiles: [tile],
+      opts: opts
+    });
+  });
+  tiles.forEach(function(tile){
+    sendTile(tile);
+  });
+}
+
 module.exports.computeCover = computeCover;
 module.exports.isValidTile = isValidTile;
 module.exports.tilesToZoom = tilesToZoom;
+module.exports.sendData = sendData;
 module.exports.sendTiles = sendTiles;
+module.exports.loadTiles = loadTiles;
+module.exports.getRemoteVectorTile = getRemoteVectorTile;
+module.exports.getLocalVectorTile = getLocalVectorTile;
+module.exports.getTileFeatures = getTileFeatures;
