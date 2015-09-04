@@ -11,12 +11,16 @@ var VectorTile = require('vector-tile').VectorTile;
 var Pbf = require('pbf');
 var MBTiles = require('mbtiles');
 var zlib = require('zlib');
+var os = require('os');
 
 module.exports = function (coverArea, opts){
   var workers = [];
   var tilesCompleted = 0;
   var ee = new EventEmitter();
   var dbs = {};
+
+  // Use correct termination signal for the os
+  var SIGHUP = os.platform()=='win32' ? 'SIGTERM' : 'SIGHUP';
 
   // compute cover
   var tiles = computeCover(coverArea, opts.zoom);
@@ -36,7 +40,7 @@ module.exports = function (coverArea, opts){
       // if all tiles have been processed, kill workers and emit 'end' event
       if(tilesCompleted >= tiles.length){
         while (workers.length) {
-          workers.shift().kill('SIGHUP');
+          workers.shift().kill(SIGHUP);
         }
         ee.emit('end');
       }
@@ -206,7 +210,7 @@ function sendData (tiles, workers, opts){
       q.defer(loadTiles, tl, dbs);
     }
   });
-  
+
   q.awaitAll(function(err, res){
     if (rl) {
       if(!opts.maxrate || opts.maxrate > 200) opts.maxrate = 200;
