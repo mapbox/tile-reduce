@@ -13,7 +13,7 @@ var fork = require('child_process').fork;
 var path = require('path');
 
 function tileReduce(options) {
-  var tiles = parseToTiles(options.area, options.zoom);
+  var tiles = parseToTiles(options, options.zoom);
   var remaining = tiles.length;
   var workers = [];
   var workersReady = 0;
