@@ -53,7 +53,7 @@ function tileReduce(options) {
 function parseToTiles(options, zoom) {
   var poly;
 
-  if (options.tiles) return tiles;
+  if (options.tiles) return options.tiles;
 
   if (options.bbox) {
     poly = bboxPolygon(options.bbox);
