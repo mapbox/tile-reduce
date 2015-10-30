@@ -3,7 +3,7 @@
 var tileReduce = require('../../src');
 var path = require('path');
 
-var numRoads = 0;
+var numFeatures = 0;
 
 tileReduce({
   bbox: [-131.693128, 30.664709, -100.681513, 55.35384],
@@ -12,8 +12,8 @@ tileReduce({
   sources: [{name: 'osm', mbtiles: path.join(__dirname, '../../../mbtiles/us-west.mbtiles')}]
 })
 .on('reduce', function(num) {
-  numRoads += num;
+  numFeatures += num;
 })
 .on('end', function() {
-  console.log('Roads total: %d', numRoads);
+  console.log('Features total: %d', numFeatures);
 });
