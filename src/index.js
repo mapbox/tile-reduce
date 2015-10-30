@@ -4,7 +4,6 @@ module.exports = tileReduce;
 
 var bboxPolygon = require('turf-bbox-polygon');
 var normalize = require('geojson-normalize');
-var fs = require('fs');
 var tilecover = require('tile-cover');
 var ProgressBar = require('progress');
 
@@ -51,32 +50,15 @@ function tileReduce(options) {
   return ee;
 }
 
-function parseToTiles(area, zoom) {
-  var jobArea = area,
-    poly = null;
+function parseToTiles(options, zoom) {
+  var poly;
 
-  if (new RegExp('.json').test(area) ||
-    new RegExp('.geojson').test(area)) {
-    var jobArea = JSON.parse(fs.readFileSync(area));
-  } 
+  if (options.tiles) return tiles;
 
-  if (jobArea instanceof Array) {
-    if (jobArea.length == 4 && typeof jobArea[0] === 'number') {
-      // bbox
-      poly = bboxPolygon(jobArea);
-    } else if (jobArea.length === 3 && typeof jobArea[0] === 'number') {
-      // [x,y,z] tile
-      poly = tilebelt.tileToGeoJSON(jobArea);
-      poly = turf.buffer(normalize(poly), -1, 'meters');
-    } else if (jobArea.length > 0 && jobArea[0].length === 3) {
-      // array of tiles!
-      return jobArea;
-    } else {
-      throw new Error('Invalid job area');
-    }
-  } else {
-    // geojson
-    poly = jobArea;
+  if (options.bbox) {
+    poly = bboxPolygon(options.bbox);
+  } else if (options.geojson) {
+    poly = options.geojson;
   }
 
   return tilecover.tiles(normalize(poly).features[0].geometry, {min_zoom: zoom, max_zoom: zoom});

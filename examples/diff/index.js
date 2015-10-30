@@ -4,7 +4,7 @@ var tileReduce = require('../../src');
 var path = require('path');
 
 tileReduce({
-  area: [-131.693128, 30.664709, -100.681513, 55.35384],
+  bbox: [-131.693128, 30.664709, -100.681513, 55.35384],
   zoom: 12,
   map: path.join(__dirname, 'diff.js'),
   sources: [
