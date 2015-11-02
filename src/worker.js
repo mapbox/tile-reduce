@@ -11,8 +11,8 @@ JSON.parse(process.argv[3]).forEach(function(config) {
 });
 
 function loadSource(config, done) {
-  if (config.mbtiles) sources.push({name: config.name, getTile: require('./mbtiles')(config.mbtiles, done)});
-  else if (config.url) sources.push({name: config.name, getTile: require('./remote')(config.url, done)});
+  if (config.mbtiles) sources.push({name: config.name, getTile: require('./mbtiles')(config, done)});
+  else if (config.url) sources.push({name: config.name, getTile: require('./remote')(config, done)});
   else throw new Error('Unknown source type');
 }
 
