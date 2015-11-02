@@ -7,8 +7,8 @@ var Pbf = require('pbf');
 
 module.exports = mbTilesVT;
 
-function mbTilesVT(path, ready) {
-  var db = new MBTiles(path, dbReady);
+function mbTilesVT(config, ready) {
+  var db = new MBTiles(config.mbtiles, dbReady);
   var getTile;
 
   function dbReady(err, db) {

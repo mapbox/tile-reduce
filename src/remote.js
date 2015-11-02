@@ -6,11 +6,11 @@ var Pbf = require('pbf');
 
 module.exports = remoteVT;
 
-function remoteVT(urlTpl, ready) {
+function remoteVT(config, ready) {
   ready();
 
   return function(tile, done) {
-    var url = urlTpl
+    var url = config.url
       .replace('{x}', tile[0])
       .replace('{y}', tile[1])
       .replace('{z}', tile[2]);
