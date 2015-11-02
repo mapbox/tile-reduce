@@ -26,7 +26,7 @@ function tileReduce(options) {
   }
 
   function handleMessage(message) {
-    if (message.reduce) reduce(message.value)
+    if (message.reduce) reduce(message.value);
     else if (message.ready && ++workersReady === workers.length) run();
   }
 
