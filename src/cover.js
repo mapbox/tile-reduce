@@ -19,20 +19,13 @@ function zoomTiles(tiles, zoom) {
   for (var i = 0; i < tiles.length; i++) {
     var tile = tiles[i];
 
-    if (tile[2] === zoom) {
-      zoomed.push(tile);
-
-    } else {
+    if (tile[2] === zoom) zoomed.push(tile);
+    else if (tile[2] > zoom) throw new Error('Tile zoom is bigger than expected.');
+    else {
       var z2 = Math.pow(2, zoom - tile[2]);
 
-      if (tile[2] > zoom) {
-        zoomed.push([
-          Math.floor(tile[0] / z2),
-          Math.floor(tile[1] / z2), zoom]);
-      } else {
-        for (var x = tile[0] * z2; x < (tile[0] + 1) * z2; x++) {
-          for (var y = tile[1] * z2; y < (tile[1] + 1) * z2; y++) zoomed.push([x, y, zoom]);
-        }
+      for (var x = tile[0] * z2; x < (tile[0] + 1) * z2; x++) {
+        for (var y = tile[1] * z2; y < (tile[1] + 1) * z2; y++) zoomed.push([x, y, zoom]);
       }
     }
   }
