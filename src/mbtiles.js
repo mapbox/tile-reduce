@@ -36,7 +36,7 @@ function getVT(db, tile, done) {
 
   function tileFetched(err, data) {
     if (!err) zlib.unzip(data, tileUnzipped);
-    else if (err.message === 'Tile does not exist') done(null, null);
+    else if (err.message === 'Tile does not exist') done();
     else done(err);
   }
 
