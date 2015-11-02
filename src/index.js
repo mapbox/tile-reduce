@@ -2,8 +2,6 @@
 
 module.exports = tileReduce;
 
-var bboxPolygon = require('turf-bbox-polygon');
-var tilecover = require('tile-cover');
 var ProgressBar = require('progress');
 
 var EventEmitter = require('events').EventEmitter;
@@ -11,8 +9,10 @@ var cpus = require('os').cpus().length;
 var fork = require('child_process').fork;
 var path = require('path');
 
+var cover = require('./cover');
+
 function tileReduce(options) {
-  var tiles = getTiles(options);
+  var tiles = cover(options);
   var remaining = tiles.length;
   var workers = [];
   var workersReady = 0;
@@ -49,13 +49,4 @@ function tileReduce(options) {
   }
 
   return ee;
-}
-
-function getTiles(options) {
-  if (options.tiles) return options.tiles;
-
-  var area = options.bbox ? bboxPolygon(options.bbox).geometry :
-    options.geojson ? options.geojson.geometry || options.geojson : null;
-
-  return tilecover.tiles(area, {min_zoom: options.zoom, max_zoom: options.zoom});
 }
