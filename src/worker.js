@@ -36,7 +36,7 @@ process.on('message', function(tile) {
     var data = {};
     for (var i = 0; i < results.length; i++) {
       data[sources[i].name] = results[i];
-      if (results[i] === null) return process.send({reduce: null});
+      if (!results[i]) return process.send({reduce: true});
     }
 
     map(data, tile, gotResults);
@@ -45,5 +45,5 @@ process.on('message', function(tile) {
 
 function gotResults(err, value) {
   if (err) throw err;
-  process.send({reduce: value});
+  process.send({reduce: true, value: value});
 }

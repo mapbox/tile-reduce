@@ -27,9 +27,9 @@ function tileReduce(options) {
 
   function handleMessage(message) {
     if (message.ready && ++workersReady === workers.length) run();
-    else if (message.reduce !== undefined) {
+    else if (message.reduce) {
       bar.tick();
-      if (message.reduce !== null) ee.emit('reduce', message.reduce);
+      if (message.value !== null && message.value !== undefined) ee.emit('reduce', message.value);
       if (--remaining === 0) shutdown();
     }
   }
