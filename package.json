@@ -20,7 +20,6 @@
   },
   "homepage": "https://github.com/mapbox/tile-reduce",
   "dependencies": {
-    "geojson-normalize": "0.0.1",
     "mbtiles": "^0.8.2",
     "pbf": "^1.3.5",
     "progress": "tj/node-progress#master",
