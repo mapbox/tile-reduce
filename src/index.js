@@ -26,12 +26,14 @@ function tileReduce(options) {
   }
 
   function handleMessage(message) {
-    if (message.ready && ++workersReady === workers.length) run();
-    else if (message.reduce) {
-      bar.tick();
-      if (message.value !== null && message.value !== undefined) ee.emit('reduce', message.value);
-      if (--remaining === 0) shutdown();
-    }
+    if (message.reduce) reduce(message.value);
+    else if (message.ready && ++workersReady === workers.length) run();
+  }
+
+  function reduce(value) {
+    bar.tick();
+    if (value !== null && value !== undefined) ee.emit('reduce', value);
+    if (--remaining === 0) shutdown();
   }
 
   function shutdown() {

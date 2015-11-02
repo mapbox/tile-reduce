@@ -15,11 +15,9 @@ function remoteVT(urlTpl, ready) {
       .replace('{y}', tile[1])
       .replace('{z}', tile[2]);
 
-    console.log('requesting ' + url);
-
     request({url: url, gzip: true, encoding: null}, function(err, res, body) {
       if (err) done(err);
-      done(null, res.statusCode === 200 ? new VectorTile(new Pbf(body)).layers : null);
+      else done(null, res.statusCode === 200 ? new VectorTile(new Pbf(body)).layers : null);
     });
   };
 }

@@ -17,10 +17,13 @@ function mbTilesVT(path, ready) {
   }
 
   function infoReady(err, info) {
-    if (err) ready(err);
-    else if (info.format === 'pbf') {
+    if (err) {
+      ready(err);
+
+    } else if (info.format === 'pbf') {
       getTile = getVT;
       ready();
+
     } else {
       ready(new Error('Unsupported MBTiles format: ' + info.format));
     }
@@ -42,6 +45,6 @@ function getVT(db, tile, done) {
 
   function tileUnzipped(err, data) {
     if (err) done(err);
-    done(null, new VectorTile(new Pbf(data)).layers);
+    else done(null, new VectorTile(new Pbf(data)).layers);
   }
 }
