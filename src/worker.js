@@ -11,9 +11,10 @@ JSON.parse(process.argv[3]).forEach(function(config) {
 });
 
 function loadSource(config, done) {
-  if (config.mbtiles) sources.push({name: config.name, getTile: require('./mbtiles')(config, done)});
-  else if (config.url) sources.push({name: config.name, getTile: require('./remote')(config, done)});
+  if (config.mbtiles) config.getTile = require('./mbtiles')(config, done);
+  else if (config.url) config.getTile = require('./remote')(config, done);
   else throw new Error('Unknown source type');
+  sources.push(config);
 }
 
 q.await(function(err) {
@@ -25,7 +26,7 @@ process.on('message', function(tile) {
   var q = queue();
 
   for (var i = 0; i < sources.length; i++) {
-    q.defer(sources[i].getTile, tile);
+    q.defer(getTile, tile, sources[i]);
   }
 
   q.awaitAll(gotData);
@@ -42,6 +43,14 @@ process.on('message', function(tile) {
     map(data, tile, gotResults);
   }
 });
+
+function getTile(tile, source, done) {
+  if (source.maxzoom && source.maxzoom < tile[2]) {
+    var m = 1 << (tile[2] - source.maxzoom);
+    tile = [Math.floor(tile[0]/m), Math.floor(tile[1]/m), source.maxzoom];
+  }
+  return source.getTile(tile, done);
+}
 
 function gotResults(err, value) {
   if (err) throw err;
