@@ -6,6 +6,12 @@ var Pbf = require('pbf');
 
 module.exports = remoteVT;
 
+var tileRequest = request.defaults({
+  gzip: true,
+  encoding: null,
+  agentOptions: {maxSockets: 5}
+});
+
 function remoteVT(config, ready) {
   ready();
 
@@ -15,7 +21,7 @@ function remoteVT(config, ready) {
       .replace('{y}', tile[1])
       .replace('{z}', tile[2]);
 
-    request({url: url, gzip: true, encoding: null}, function(err, res, body) {
+    tileRequest(url, function(err, res, body) {
       if (err) done(err);
       else done(null, res.statusCode === 200 ? new VectorTile(new Pbf(body)).layers : null);
     });
