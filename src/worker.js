@@ -47,7 +47,7 @@ process.on('message', function(tile) {
 function getTile(tile, source, done) {
   if (source.maxzoom && source.maxzoom < tile[2]) {
     var m = 1 << (tile[2] - source.maxzoom);
-    tile = [Math.floor(tile[0]/m), Math.floor(tile[1]/m), source.maxzoom];
+    tile = [Math.floor(tile[0] / m), Math.floor(tile[1] / m), source.maxzoom];
   }
   return source.getTile(tile, done);
 }
