@@ -9,8 +9,9 @@ module.exports = function(data, tile, done) {
   var tiger = toLines(data.tiger.tiger2015);
   var streets = toLines(data.osm.osm);
 
-  // find tiger parts that are not covered by streets within 10 pixels
-  var diff = linematch(tiger, streets, 10);
+  // find tiger parts that are not covered by streets within 10 pixels;
+  // filter out chunks that are too short
+  var diff = linematch(tiger, streets, 10).filter(filterShort);
 
   if (diff.length) {
     // write a feature with the diff as MultiLineString
@@ -35,10 +36,10 @@ function toGeoJSON(diff, tile) {
   for (var i = 0; i < diff.length; i++) {
     for (var j = 0; j < diff[i].length; j++) {
       var p = diff[i][j];
+      var y2 = 180 - (p[1] + y0) * 360 / size;
       diff[i][j] = [
         round((p[0] + x0) * 360 / size - 180),
-        round(360 / Math.PI * Math.atan(Math.exp((180 - (p[1] + y0) * 360 / size) * Math.PI / 180)) - 90)
-      ];
+        round(360 / Math.PI * Math.atan(Math.exp(y2 * Math.PI / 180)) - 90)];
     }
   }
   return diff;
@@ -59,24 +60,26 @@ function toLines(layer) {
     if (feature.type === 2 && (feature.properties.FULLNAME !== '' || feature.properties.highway)) {
       var geom = feature.loadGeometry();
 
-      // normalize line geometry
-      var line = [];
       for (var k = 0; k < geom.length; k++) {
-        for (var j = 0; j < geom[k].length; j++) {
-          line.push([
-            geom[k][j].x * 4096 / layer.extent,
-            geom[k][j].y * 4096 / layer.extent
-          ]);
-        }
-      }
-
-      // only consider lines that are longer than 20 pixels
-      if (dist(line) >= 20) {
-        lineclip(line, bbox, lines); // clip to tile bbox
+        lineclip(normalizeLine(geom[k], layer.extent), bbox, lines); // clip to tile bbox and add to result
       }
     }
   }
   return lines;
+}
+
+function normalizeLine(line, extent) {
+  var newLine = [];
+  for (var i = 0; i < line.length; i++) {
+    newLine.push([
+      line[i].x * 4096 / extent,
+      line[i].y * 4096 / extent]);
+  }
+  return newLine;
+}
+
+function filterShort(line) {
+  return dist(line) >= 30; // line length is at least 30 pixels
 }
 
 function dist(line) { // approximate distance
