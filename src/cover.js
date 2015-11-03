@@ -6,7 +6,7 @@ var tilecover = require('tile-cover');
 var bboxPolygon = require('turf-bbox-polygon');
 
 function cover(options) {
-  if (options.tiles) return zoomTiles(options.tiles);
+  if (options.tiles) return zoomTiles(options.tiles, options.zoom);
 
   var area = options.bbox ? bboxPolygon(options.bbox).geometry :
     options.geojson ? options.geojson.geometry || options.geojson : null;
