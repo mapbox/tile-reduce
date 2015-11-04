@@ -10,12 +10,16 @@ var fork = require('child_process').fork;
 var path = require('path');
 var fs = require('fs');
 var split = require('split');
-
 var cover = require('./cover');
+var through2 = require('through2');
 
 function tileReduce(options) {
   var workers = [];
   var workersReady = 0;
+  var tileStream = null;
+  var tilesDone = 0;
+  var tilesSent = 0;
+  var pauseLimit = 50000;
 
   for (var i = 0; i < cpus - 1; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)]);
@@ -24,8 +28,10 @@ function tileReduce(options) {
   }
 
   function handleMessage(message) {
-    if (message.reduce) reduce(message.value);
-    else if (message.ready && ++workersReady === workers.length) run();
+    if (message.reduce) {
+      reduce(message.value);
+      if (tileStream.paused && tilesSent - tilesDone < (pauseLimit / 2)) tileStream.resume();
+    } else if (message.ready && ++workersReady === workers.length) run();
   }
 
   var bar = new ProgressBar(':current / :total tiles (:percent), :elapseds elapsed [:bar] ', {
@@ -36,29 +42,36 @@ function tileReduce(options) {
 
   var ee = new EventEmitter();
   var tiles = typeof options.tiles === 'string' ? null : cover(options);
-  var tilesDone = 0;
-  var tilesSent = 0;
+
 
   function run() {
     ee.emit('start');
 
     if (tiles) {
+      tileStream = through2.obj();
       for (var i = 0; i < tiles.length; i++) {
-        workers[tilesSent++ % workers.length].send(tiles[i]);
+        tileStream.write(tiles[i]);
       }
-      bar.total = tilesSent;
+      bar.total = tiles.length;
       bar.tick(0);
-
     } else {
-      fs.createReadStream(options.tiles).pipe(split()).on('data', handleLine);
+      tileStream = fs.createReadStream(options.tiles)
+        .pipe(split())
+        .pipe(through2.obj(function(chunk, enc, done) {
+          done(null, chunk.split(' ').map(Number));
+        }));
     }
+
+    tileStream.on('data', handleTile);
   }
 
-  function handleLine(line) {
-    var tile = line.split(' ').map(Number);
+  function handleTile(tile) {
     workers[tilesSent++ % workers.length].send(tile);
-    bar.total = tilesSent;
-    bar.tick(0);
+    if (tilesSent - tilesDone > pauseLimit) tileStream.pause();
+    if (bar.total < tilesSent) {
+      bar.total = tilesSent;
+      bar.tick(0);
+    }
   }
 
   function reduce(value) {
