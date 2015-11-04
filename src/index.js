@@ -62,10 +62,10 @@ function tileReduce(options) {
         }));
     }
 
-    tileStream.on('data', handleLine)
+    tileStream.on('data', handleTile)
   }
 
-  function handleLine(tile) {
+  function handleTile(tile) {
     workers[tilesSent++ % workers.length].send(tile);
     if (tilesSent - tilesDone > pauseLimit) tileStream.pause();
     if (bar.total < tilesSent) {
