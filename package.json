@@ -25,6 +25,7 @@
     "progress": "tj/node-progress#master",
     "queue-async": "^1.0.7",
     "request": "^2.65.0",
+    "split": "^1.0.0",
     "tile-cover": "^3.0.1",
     "tilebelt": "^1.0.1",
     "turf-bbox-polygon": "^1.0.1",
