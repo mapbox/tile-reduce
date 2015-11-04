@@ -16,6 +16,10 @@ var through2 = require('through2');
 function tileReduce(options) {
   var workers = [];
   var workersReady = 0;
+  var tileStream = null;
+  var tilesDone = 0;
+  var tilesSent = 0;
+  var pauseLimit = 50000;
 
   for (var i = 0; i < cpus - 1; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)]);
@@ -38,10 +42,6 @@ function tileReduce(options) {
 
   var ee = new EventEmitter();
   var tiles = typeof options.tiles === 'string' ? null : cover(options);
-  var tilesDone = 0;
-  var tilesSent = 0;
-  var pauseLimit = 50000
-  var tileStream = null;
 
 
   function run() {
@@ -57,12 +57,12 @@ function tileReduce(options) {
     } else {
       tileStream = fs.createReadStream(options.tiles)
         .pipe(split())
-        .pipe(through2.obj(function (chunk, enc, done) {
+        .pipe(through2.obj(function(chunk, enc, done) {
           done(null, chunk.split(' ').map(Number));
         }));
     }
 
-    tileStream.on('data', handleTile)
+    tileStream.on('data', handleTile);
   }
 
   function handleTile(tile) {
