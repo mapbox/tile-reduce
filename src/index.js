@@ -55,15 +55,17 @@ function tileReduce(options) {
       bar.total = tiles.length;
       bar.tick(0);
     } else {
-      tileStream = fs.createReadStream(options.tiles).pipe(split())
+      tileStream = fs.createReadStream(options.tiles)
+        .pipe(split())
+        .pipe(through2.obj(function (chunk, enc, done) {
+          done(null, chunk.split(' ').map(Number));
+        }));
     }
 
     tileStream.on('data', handleLine)
   }
 
   function handleLine(tile) {
-    if (typeof line === 'string') tile = tile.split(' ').map(Number);
-  
     workers[tilesSent++ % workers.length].send(tile);
     if (tilesSent - tilesDone > pauseLimit) tileStream.pause();
     if (bar.total < tilesSent) {
