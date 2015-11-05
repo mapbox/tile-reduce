@@ -32,10 +32,8 @@ function tileReduce(options) {
   }
 
   function handleMessage(message) {
-    if (message.reduce) {
-      reduce(message.value);
-      if (tileStream.paused && tilesSent - tilesDone < (pauseLimit / 2)) tileStream.resume();
-    } else if (message.ready && ++workersReady === workers.length) run();
+    if (message.reduce) reduce(message.value);
+    else if (message.ready && ++workersReady === workers.length) run();
   }
 
   var bar = new ProgressBar(':current / :total tiles (:percent), :elapseds elapsed [:bar] ', {
@@ -52,22 +50,21 @@ function tileReduce(options) {
     ee.emit('start');
 
     if (tiles) {
-      tileStream = through2.obj();
+      tileStream = through2.obj().on('data', handleTile);
       for (var i = 0; i < tiles.length; i++) {
         tileStream.write(tiles[i]);
       }
       bar.total = tiles.length;
       bar.tick(0);
     } else {
-      tileStream = fs.createReadStream(options.tiles).pipe(tileTransform);
+      tileStream = fs.createReadStream(options.tiles);
+      tileStream.pipe(tileTransform).on('data', handleTile);
     }
-
-    tileStream.on('data', handleTile);
   }
 
   function handleTile(tile) {
     workers[tilesSent++ % workers.length].send(tile);
-    if (!tileStream.paused && tilesSent - tilesDone > pauseLimit) tileStream.pause();
+    if (!tileStream.isPaused() && tilesSent - tilesDone > pauseLimit) tileStream.pause();
     if (bar.total < tilesSent) {
       bar.total = tilesSent;
       bar.tick(0);
@@ -77,6 +74,7 @@ function tileReduce(options) {
   function reduce(value) {
     bar.tick();
     if (value !== null && value !== undefined) ee.emit('reduce', value);
+    if (tileStream.isPaused() && tilesSent - tilesDone < (pauseLimit / 2)) tileStream.resume();
     if (++tilesDone === tilesSent) shutdown();
   }
 
