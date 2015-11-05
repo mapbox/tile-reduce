@@ -23,7 +23,7 @@ function tileReduce(options) {
   var tileStream = null;
   var tilesDone = 0;
   var tilesSent = 0;
-  var pauseLimit = 50000;
+  var pauseLimit = 5000;
 
   for (var i = 0; i < cpus - 1; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)]);
