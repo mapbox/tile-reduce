@@ -13,6 +13,10 @@ var split = require('split');
 var cover = require('./cover');
 var through2 = require('through2');
 
+var tileTransform = split(function(line) {
+  return line.split(' ').map(Number);
+});
+
 function tileReduce(options) {
   var workers = [];
   var workersReady = 0;
@@ -55,11 +59,7 @@ function tileReduce(options) {
       bar.total = tiles.length;
       bar.tick(0);
     } else {
-      tileStream = fs.createReadStream(options.tiles)
-        .pipe(split())
-        .pipe(through2.obj(function(chunk, enc, done) {
-          done(null, chunk.split(' ').map(Number));
-        }));
+      tileStream = fs.createReadStream(options.tiles).pipe(tileTransform);
     }
 
     tileStream.on('data', handleTile);
@@ -67,7 +67,7 @@ function tileReduce(options) {
 
   function handleTile(tile) {
     workers[tilesSent++ % workers.length].send(tile);
-    if (tilesSent - tilesDone > pauseLimit) tileStream.pause();
+    if (!tileStream.paused && tilesSent - tilesDone > pauseLimit) tileStream.pause();
     if (bar.total < tilesSent) {
       bar.total = tilesSent;
       bar.tick(0);
