@@ -11,7 +11,7 @@ var path = require('path');
 var fs = require('fs');
 var split = require('split');
 var cover = require('./cover');
-var through2 = require('through2');
+var streamArray = require('stream-array');
 
 var tileTransform = split(function(line) {
   return line.split(' ').map(Number);
@@ -50,10 +50,7 @@ function tileReduce(options) {
     ee.emit('start');
 
     if (tiles) {
-      tileStream = through2.obj().on('data', handleTile);
-      for (var i = 0; i < tiles.length; i++) {
-        tileStream.write(tiles[i]);
-      }
+      tileStream = streamArray(tiles).on('data', handleTile);
       bar.total = tiles.length;
       bar.tick(0);
     } else {
