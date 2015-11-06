@@ -2,8 +2,6 @@
 
 module.exports = tileReduce;
 
-var ProgressBar = require('progress');
-
 var EventEmitter = require('events').EventEmitter;
 var cpus = require('os').cpus().length;
 var fork = require('child_process').fork;
@@ -24,6 +22,7 @@ function tileReduce(options) {
   var tilesDone = 0;
   var tilesSent = 0;
   var pauseLimit = 5000;
+  var start = Date.now();
 
   for (var i = 0; i < cpus; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)]);
@@ -36,23 +35,16 @@ function tileReduce(options) {
     else if (message.ready && ++workersReady === workers.length) run();
   }
 
-  var bar = new ProgressBar(':current / :total tiles (:percent), :elapseds elapsed [:bar] ', {
-    total: 1,
-    width: Infinity
-  });
-  bar.tick(0);
-
   var ee = new EventEmitter();
   var tiles = typeof options.tiles === 'string' ? null : cover(options);
 
+  var timer = setInterval(updateStatus, 64);
 
   function run() {
     ee.emit('start');
 
     if (tiles) {
       tileStream = streamArray(tiles).on('data', handleTile);
-      bar.total = tiles.length;
-      bar.tick(0);
     } else {
       tileStream = fs.createReadStream(options.tiles);
       tileStream.pipe(tileTransform).on('data', handleTile);
@@ -62,14 +54,9 @@ function tileReduce(options) {
   function handleTile(tile) {
     workers[tilesSent++ % workers.length].send(tile);
     if (!tileStream.isPaused() && tilesSent - tilesDone > pauseLimit) tileStream.pause();
-    if (bar.total < tilesSent) {
-      bar.total = tilesSent;
-      bar.tick(0);
-    }
   }
 
   function reduce(value) {
-    bar.tick();
     if (value !== null && value !== undefined) ee.emit('reduce', value);
     if (tileStream.isPaused() && tilesSent - tilesDone < (pauseLimit / 2)) tileStream.resume();
     if (++tilesDone === tilesSent) shutdown();
@@ -77,7 +64,23 @@ function tileReduce(options) {
 
   function shutdown() {
     while (workers.length) workers.pop().kill();
+
+    clearTimeout(timer);
+    updateStatus();
+    process.stderr.write('.\n');
+
     ee.emit('end');
+  }
+
+  function updateStatus() {
+    var s = Math.floor((Date.now() - start) / 1000);
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s - h * 3600) / 60);
+    var time = (h ? h + 'h ' : '') + (h || m ? m + 'm ' : '') + (s % 60) + 's';
+
+    process.stderr.cursorTo(0);
+    process.stderr.write(tilesDone + ' tiles processed in ' + time);
+    process.stderr.clearLine(1);
   }
 
   return ee;
