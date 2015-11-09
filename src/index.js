@@ -51,14 +51,22 @@ function tileReduce(options) {
     }
   }
 
+  var paused = false;
+
   function handleTile(tile) {
     workers[tilesSent++ % workers.length].send(tile);
-    if (!tileStream.isPaused() && tilesSent - tilesDone > pauseLimit) tileStream.pause();
+    if (!paused && tilesSent - tilesDone > pauseLimit) {
+      paused = true;
+      tileStream.pause();
+    }
   }
 
   function reduce(value) {
     if (value !== null && value !== undefined) ee.emit('reduce', value);
-    if (tileStream.isPaused() && tilesSent - tilesDone < (pauseLimit / 2)) tileStream.resume();
+    if (paused && tilesSent - tilesDone < (pauseLimit / 2)) {
+      paused = false;
+      tileStream.resume();
+    }
     if (++tilesDone === tilesSent) shutdown();
   }
 
