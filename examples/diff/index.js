@@ -4,12 +4,12 @@ var tileReduce = require('../../src');
 var path = require('path');
 
 tileReduce({
-  tiles: path.join(__dirname, '../../../mbtiles/us-west.txt'),
-  zoom: 12,
+  bbox: [-122.05862045288086, 36.93768132842635, -121.97296142578124, 37.00378647456494],
+  zoom: 15,
   map: path.join(__dirname, 'diff.js'),
   sources: [
-    {name: 'osm',   mbtiles: path.join(__dirname, '../../../mbtiles/us-west.mbtiles')},
-    {name: 'tiger', mbtiles: path.join(__dirname, '../../../mbtiles/tiger2015.mbtiles')}
+    {name: 'osm',   mbtiles: path.join(__dirname, '../../test/fixtures/osm.mbtiles')},
+    {name: 'tiger', mbtiles: path.join(__dirname, '../../test/fixtures/tiger.mbtiles')}
   ]
 })
 .on('start', function() {
