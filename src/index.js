@@ -25,8 +25,7 @@ function tileReduce(options) {
   var start = Date.now();
 
   for (var i = 0; i < cpus; i++) {
-    var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
-    worker.stdout.pipe(split(function (line) { return line + '\n'})).pipe(process.stdout);
+    var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)]);
     worker.on('message', handleMessage);
     workers.push(worker);
   }
