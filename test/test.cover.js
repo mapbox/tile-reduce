@@ -1,24 +1,25 @@
-var test = require('tap').test,
-  cover = require('../src/cover.js'),
-  tilebelt = require('tilebelt');  
+'use strict';
 
-test('cover -- bbox', function (t) {
-    var options = {
-      zoom: 2,
-      bbox: [-153,33,-26,82]
-    };
+var test = require('tap').test;
+var cover = require('../src/cover.js');
 
-    var tiles = cover(options);
-    t.equal(tiles.length, 4, 'should be covered by 4 tiles')
-    t.end();
+test('cover -- bbox', function(t) {
+  var options = {
+    zoom: 2,
+    bbox: [-153, 33, -26, 82]
+  };
+
+  var tiles = cover(options);
+  t.equal(tiles.length, 4, 'should be covered by 4 tiles');
+  t.end();
 });
 
-test('cover -- geojson', function (t) {
+test('cover -- geojson', function(t) {
   var options = {
     zoom: 2,
     geojson: {
-      "type": "Polygon",
-      "coordinates": [
+      'type': 'Polygon',
+      'coordinates': [
         [
           [-153, 33],
           [-153, 82],
@@ -35,7 +36,7 @@ test('cover -- geojson', function (t) {
   t.end();
 });
 
-test('cover -- tiles', function (t) {
+test('cover -- tiles', function(t) {
   var options = {
     zoom: 2,
     tiles: [
@@ -53,7 +54,7 @@ test('cover -- tiles', function (t) {
   t.end();
 });
 
-test('cover -- tiles & rezoom', function (t) {
+test('cover -- tiles & rezoom', function(t) {
   var options = {
     zoom: 2,
     tiles: [
