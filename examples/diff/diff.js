@@ -6,8 +6,8 @@ var lineclip = require('lineclip');
 module.exports = function(data, tile, done) {
 
   // filter and normalize input geometry
-  var tiger = toLines(data.tiger.tiger2015);
-  var streets = toLines(data.osm.osm);
+  var tiger = toLines(data.tiger.tiger);
+  var streets = toLines(data.osm.roads);
 
   // find tiger parts that are not covered by streets within 10 pixels;
   // filter out chunks that are too short
@@ -15,6 +15,7 @@ module.exports = function(data, tile, done) {
 
   if (diff.length) {
     // write a feature with the diff as MultiLineString
+    // console.log(diff.length)
     process.stdout.write(',' + JSON.stringify({
       type: 'Feature',
       properties: {},

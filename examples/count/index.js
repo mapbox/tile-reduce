@@ -6,11 +6,10 @@ var path = require('path');
 var numFeatures = 0;
 
 tileReduce({
-  tiles: path.join(__dirname, '../../../mbtiles/us-west.txt'),
-  // bbox: [-131.693128, 30.664709, -100.681513, 55.35384],
-  zoom: 12,
+  bbox: [-122.05862045288086, 36.93768132842635, -121.97296142578124, 37.00378647456494],
+  zoom: 15,
   map: path.join(__dirname, '/count.js'),
-  sources: [{name: 'osm', mbtiles: path.join(__dirname, '../../../mbtiles/us-west.mbtiles')}]
+  sources: [{name: 'osm', mbtiles: path.join(__dirname, '../../test/fixtures/osm.mbtiles')}]
 })
 .on('reduce', function(num) {
   numFeatures += num;
