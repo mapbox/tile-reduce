@@ -19,11 +19,9 @@ function mbTilesVT(config, ready) {
   function infoReady(err, info) {
     if (err) {
       ready(err);
-
     } else if (info.format === 'pbf') {
       getTile = getVT;
       ready();
-
     } else {
       ready(new Error('Unsupported MBTiles format: ' + info.format));
     }
