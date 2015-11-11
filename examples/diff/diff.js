@@ -3,7 +3,7 @@
 var linematch = require('linematch');
 var lineclip = require('lineclip');
 
-module.exports = function(data, tile, done) {
+module.exports = function(data, tile, writeData, done) {
 
   // filter and normalize input geometry
   var tiger = toLines(data.tiger.tiger);
@@ -16,7 +16,7 @@ module.exports = function(data, tile, done) {
   if (diff.length) {
     // write a feature with the diff as MultiLineString
     // console.log(diff.length)
-    process.stdout.write(',' + JSON.stringify({
+    writeData(',' + JSON.stringify({
       type: 'Feature',
       properties: {},
       geometry: {
