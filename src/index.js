@@ -25,12 +25,14 @@ function tileReduce(options) {
   var pauseLimit = 5000;
   var start = Date.now();
 
-  // Suppress listener warnings for pipes to stdout
+  // Suppress max listener warnings. We need 1 pipe per worker
   process.stdout.setMaxListeners(cpus);
+  process.stderr.setMaxListeners(cpus);
 
   for (var i = 0; i < cpus; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
     worker.stdout.pipe(binarysplit('\x1e')).pipe(process.stdout);
+    worker.stderr.pipe(process.stdout);
     worker.on('message', handleMessage);
     workers.push(worker);
   }
