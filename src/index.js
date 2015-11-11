@@ -8,6 +8,7 @@ var fork = require('child_process').fork;
 var path = require('path');
 var fs = require('fs');
 var split = require('split');
+var binarysplit = require('binary-split');
 var cover = require('./cover');
 var streamArray = require('stream-array');
 
@@ -24,8 +25,12 @@ function tileReduce(options) {
   var pauseLimit = 5000;
   var start = Date.now();
 
+  // Suppress listener warnings for pipes to stdout
+  process.stdout.setMaxListeners(cpus);
+
   for (var i = 0; i < cpus; i++) {
-    var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)]);
+    var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
+    worker.stdout.pipe(binarysplit('\x1e')).pipe(process.stdout);
     worker.on('message', handleMessage);
     workers.push(worker);
   }
