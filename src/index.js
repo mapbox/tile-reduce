@@ -10,6 +10,7 @@ var fs = require('fs');
 var binarysplit = require('binary-split');
 var cover = require('./cover');
 var streamArray = require('stream-array');
+var MBTiles = require('mbtiles');
 
 // Suppress max listener warnings. We need 1 pipe per worker
 process.stdout.setMaxListeners(cpus + 1);
@@ -38,18 +39,26 @@ function tileReduce(options) {
   }
 
   var ee = new EventEmitter();
-  var tiles = typeof options.tiles === 'string' ? null : cover(options);
-
   var timer = setInterval(updateStatus, 64);
 
   function run() {
     ee.emit('start');
 
-    if (tiles) {
-      tileStream = streamArray(tiles).on('data', handleTile);
-    } else {
+    if (!options.tiles && options.sources[0].mbtiles) {
+      // mbtiles zxystream
+      var db = new MBTiles(options.sources[0].mbtiles, function(err) {
+        if (err) throw err;
+        tileStream = db.createZXYStream({batch: pauseLimit}).pipe(binarysplit()).on('data', handleZXYLine);
+      });
+
+    } else if (typeof options.tiles === 'string') {
+      // text file tile stream ("x y z\n")
       tileStream = fs.createReadStream(options.tiles);
       tileStream.pipe(binarysplit()).on('data', handleTileLine);
+
+    } else {
+      // JS tile array, GeoJSON or bbox
+      tileStream = streamArray(cover(options.tiles)).on('data', handleTile);
     }
   }
 
@@ -65,6 +74,11 @@ function tileReduce(options) {
 
   function handleTileLine(line) {
     handleTile(line.toString().split(' ').map(Number));
+  }
+
+  function handleZXYLine(line) {
+    var tile = line.toString().split('/');
+    handleTile([+tile[1], +tile[2], +tile[0]]);
   }
 
   function reduce(value) {
