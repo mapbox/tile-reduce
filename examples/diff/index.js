@@ -8,8 +8,8 @@ tileReduce({
   zoom: 15,
   map: path.join(__dirname, 'diff.js'),
   sources: [
-    {name: 'osm',   mbtiles: path.join(__dirname, '../../test/fixtures/osm.mbtiles')},
-    {name: 'tiger', mbtiles: path.join(__dirname, '../../test/fixtures/tiger.mbtiles')}
+    {name: 'osm',   mbtiles: path.join(__dirname, '../../test/fixtures/osm.mbtiles'), raw: true},
+    {name: 'tiger', mbtiles: path.join(__dirname, '../../test/fixtures/tiger.mbtiles'), raw: true}
   ]
 })
 .on('start', function() {

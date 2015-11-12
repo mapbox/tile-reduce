@@ -14,8 +14,8 @@ test('count implementation', function(t) {
     zoom: 15,
     map: path.join(__dirname, 'fixtures/count.js'),
     sources: [
-      {name: 'osm', mbtiles: path.join(__dirname, '/fixtures/osm.mbtiles')},
-      {name: 'tiger', mbtiles: path.join(__dirname, '/fixtures/tiger.mbtiles')}
+      {name: 'osm', mbtiles: path.join(__dirname, '/fixtures/osm.mbtiles'), raw: true},
+      {name: 'tiger', mbtiles: path.join(__dirname, '/fixtures/tiger.mbtiles'), raw: true}
     ]
   })
   .on('start', function() {

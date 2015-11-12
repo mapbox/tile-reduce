@@ -28,11 +28,11 @@ function mbTilesVT(source, ready) {
   }
 
   return function(tile, done) {
-    getTile(db, tile, done);
+    getTile(db, source, tile, done);
   };
 }
 
-function getVT(db, tile, done) {
+function getVT(db, source, tile, done) {
   db.getTile(tile[2], tile[0], tile[1], tileFetched);
 
   function tileFetched(err, data) {
@@ -43,6 +43,27 @@ function getVT(db, tile, done) {
 
   function tileUnzipped(err, data) {
     if (err) done(err);
-    else done(null, new VectorTile(new Pbf(data)).layers);
+    else if (source.raw) done(null, new VectorTile(new Pbf(data)).layers);
+    else done(null, toGeoJSON(new VectorTile(new Pbf(data)), tile, source));
   }
+}
+
+function toGeoJSON(vt, tile, source) {
+  var layers = Object.keys(vt.layers);
+  var collections = {};
+
+  for (var i = 0; i < layers.length; i++) {
+    if (!source.layers || source.layers.indexOf(layers[i]) !== -1) {
+      collections[layers[i]] = {
+        type: 'FeatureCollection',
+        features: []
+      };
+      for (var k = 0; k < vt.layers[layers[i]].length; k++) {
+        collections[layers[i]].features.push(
+          vt.layers[layers[i]].feature(k).toGeoJSON(tile[0], tile[1], tile[2])
+        );
+      }
+    }
+  }
+  return collections;
 }
