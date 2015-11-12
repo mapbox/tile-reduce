@@ -39,9 +39,14 @@ process.on('message', function(tile) {
       if (!results[i]) return process.send({reduce: true});
     }
 
-    map(data, tile, gotResults);
+    map(data, tile, write, gotResults);
   }
 });
+
+function write(data) {
+  process.stdout.write(data);
+  process.stdout.write('\x1e');
+}
 
 function gotResults(err, value) {
   if (err) throw err;
