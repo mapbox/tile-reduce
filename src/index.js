@@ -101,14 +101,16 @@ function tileReduce(options) {
   }
 
   function updateStatus() {
-    var s = Math.floor((Date.now() - start) / 1000);
-    var h = Math.floor(s / 3600);
-    var m = Math.floor((s - h * 3600) / 60);
-    var time = (h ? h + 'h ' : '') + (h || m ? m + 'm ' : '') + (s % 60) + 's';
+    if (process.stderr.cursorTo) {
+      var s = Math.floor((Date.now() - start) / 1000);
+      var h = Math.floor(s / 3600);
+      var m = Math.floor((s - h * 3600) / 60);
+      var time = (h ? h + 'h ' : '') + (h || m ? m + 'm ' : '') + (s % 60) + 's';
 
-    process.stderr.cursorTo(0);
-    process.stderr.write(tilesDone + ' tiles processed in ' + time);
-    process.stderr.clearLine(1);
+      process.stderr.cursorTo(0);
+      process.stderr.write(tilesDone + ' tiles processed in ' + time);
+      process.stderr.clearLine(1);
+    }
   }
 
   return ee;
