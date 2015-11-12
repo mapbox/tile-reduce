@@ -45,7 +45,7 @@ test('mbtiles - full GeoJSON parse', function(t) {
   });
 });
 
-test('mbtiles - full GeoJSON parse', function(t) {
+test('mbtiles - sparse GeoJSON parse', function(t) {
   var source = {
     name: 'osm',
     mbtiles: path.join(__dirname, '/fixtures/osm.mbtiles'),

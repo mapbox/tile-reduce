@@ -5,7 +5,11 @@ var remote = require('../src/remote');
 
 test('remote - raw parse', function(t) {
   var osmUrl = 'https://b.tiles.mapbox.com/v4/morganherlocker.3vsvfjjw/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
-  var source = {name: 'osm', url: osmUrl};
+  var source = {
+    name: 'osm',
+    url: osmUrl,
+    raw: true
+  };
   var getTile = remote(source, function() {});
 
   getTile([5276, 12757, 15], function(err, layers) {
@@ -13,6 +17,45 @@ test('remote - raw parse', function(t) {
     t.ok(layers, 'layers parsed from remote source');
     t.equal(layers.buildings.length, 264, 'layers have correct number of buildings');
     t.equal(layers.roads.length, 384, 'layers have correct number of roads');
+    t.end();
+  });
+});
+
+test('remote - full GeoJSON parse', function(t) {
+  var osmUrl = 'https://b.tiles.mapbox.com/v4/morganherlocker.3vsvfjjw/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
+  var source = {
+    name: 'osm',
+    url: osmUrl
+  };
+  var getTile = remote(source, function() {});
+
+  getTile([5276, 12757, 15], function(err, layers) {
+    t.notOk(err, 'remote unpacked without error');
+    t.ok(layers, 'layers parsed from remote');
+    t.equal(layers.buildings.features.length, 264, 'layers have correct number of buildings');
+    t.equal(layers.buildings.type, 'FeatureCollection', 'buildings decoded as GeoJSON FeatureCollection');
+    t.equal(layers.buildings.features[0].geometry.type, 'Polygon', 'building decoded as GeoJSON Polygon');
+    t.equal(layers.roads.features.length, 384, 'layers have correct number of roads');
+    t.equal(layers.roads.type, 'FeatureCollection', 'roads decoded as GeoJSON FeatureCollection');
+    t.equal(layers.roads.features[0].geometry.type, 'LineString', 'road decoded as GeoJSON LineString');
+    t.end();
+  });
+});
+
+test('remote - sparse GeoJSON parse', function(t) {
+  var osmUrl = 'https://b.tiles.mapbox.com/v4/morganherlocker.3vsvfjjw/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
+  var source = {
+    name: 'osm',
+    url: osmUrl,
+    layers: ['buildings']
+  };
+  var getTile = remote(source, function() {});
+
+  getTile([5276, 12757, 15], function(err, layers) {
+    t.notOk(err, 'remote unpacked without error');
+    t.ok(layers, 'layers parsed from remote');
+    t.equal(layers.buildings.features.length, 264, 'layers have correct number of buildings');
+    t.notOk(layers.roads);
     t.end();
   });
 });
