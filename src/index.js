@@ -7,14 +7,9 @@ var cpus = require('os').cpus().length;
 var fork = require('child_process').fork;
 var path = require('path');
 var fs = require('fs');
-var split = require('split');
 var binarysplit = require('binary-split');
 var cover = require('./cover');
 var streamArray = require('stream-array');
-
-var tileTransform = split(function(line) {
-  return line.split(' ').map(Number);
-});
 
 // Suppress max listener warnings. We need 1 pipe per worker
 process.stdout.setMaxListeners(cpus + 1);
@@ -54,7 +49,7 @@ function tileReduce(options) {
       tileStream = streamArray(tiles).on('data', handleTile);
     } else {
       tileStream = fs.createReadStream(options.tiles);
-      tileStream.pipe(tileTransform).on('data', handleTile);
+      tileStream.pipe(binarysplit()).on('data', handleTileLine);
     }
   }
 
@@ -66,6 +61,10 @@ function tileReduce(options) {
       paused = true;
       tileStream.pause();
     }
+  }
+
+  function handleTileLine(line) {
+    handleTile(line.toString().split(' ').map(Number));
   }
 
   function reduce(value) {
