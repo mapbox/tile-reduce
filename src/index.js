@@ -32,7 +32,7 @@ function tileReduce(options) {
   for (var i = 0; i < cpus; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
     worker.stdout.pipe(binarysplit('\x1e')).pipe(process.stdout);
-    worker.stderr.pipe(process.stdout);
+    worker.stderr.pipe(process.stderr);
     worker.on('message', handleMessage);
     workers.push(worker);
   }
