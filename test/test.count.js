@@ -6,6 +6,7 @@ var path = require('path');
 
 test('count implementation', function(t) {
   var numFeatures = 0;
+  var startFired = false;
   var reduceFired = false;
 
   tileReduce({
@@ -17,12 +18,16 @@ test('count implementation', function(t) {
       {name: 'tiger', mbtiles: path.join(__dirname, '/fixtures/tiger.mbtiles')}
     ]
   })
+  .on('start', function() {
+    startFired = true;
+  })
   .on('reduce', function(num) {
     numFeatures += num;
     reduceFired = true;
   })
   .on('end', function() {
-    t.equal(numFeatures, 16182, 'found all features');
+    t.equal(numFeatures, 36597, 'found all features');
+    t.equal(startFired, true, 'start fired');
     t.equal(reduceFired, true, 'reduce fired');
     t.end();
   });
