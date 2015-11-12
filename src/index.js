@@ -16,6 +16,10 @@ var tileTransform = split(function(line) {
   return line.split(' ').map(Number);
 });
 
+// Suppress max listener warnings. We need 1 pipe per worker
+process.stdout.setMaxListeners(cpus + 1);
+process.stderr.setMaxListeners(cpus + 1);
+
 function tileReduce(options) {
   var workers = [];
   var workersReady = 0;
@@ -24,10 +28,6 @@ function tileReduce(options) {
   var tilesSent = 0;
   var pauseLimit = 5000;
   var start = Date.now();
-
-  // Suppress max listener warnings. We need 1 pipe per worker
-  process.stdout.setMaxListeners(cpus);
-  process.stderr.setMaxListeners(cpus);
 
   for (var i = 0; i < cpus; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
