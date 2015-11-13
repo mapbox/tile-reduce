@@ -1,4 +1,4 @@
-# tile-reduce
+# TileReduce
 
 [![Build Status](https://travis-ci.org/mapbox/tile-reduce.svg)](https://travis-ci.org/mapbox/tile-reduce)
 
