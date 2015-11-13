@@ -12,9 +12,9 @@ var cover = require('./cover');
 var streamArray = require('stream-array');
 var MBTiles = require('mbtiles');
 
-// Suppress max listener warnings. We need 1 pipe per worker
-process.stdout.setMaxListeners(cpus + 1);
-process.stderr.setMaxListeners(cpus + 1);
+// Suppress max listener warnings. We need at least 1 listener per worker.
+process.stdout.setMaxListeners(0);
+process.stderr.setMaxListeners(0);
 
 function tileReduce(options) {
   var workers = [];
