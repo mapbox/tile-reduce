@@ -8,7 +8,6 @@ module.exports = mbTilesVT;
 
 function mbTilesVT(source, ready) {
   var db = new MBTiles(source.mbtiles, dbReady);
-  var getTile;
 
   function dbReady(err, db) {
     if (err) ready(err);
@@ -19,16 +18,11 @@ function mbTilesVT(source, ready) {
     if (err) {
       ready(err);
     } else if (info.format === 'pbf') {
-      getTile = getVT;
-      ready();
+      ready(null, getVT.bind(null, db, source));
     } else {
       ready(new Error('Unsupported MBTiles format: ' + info.format));
     }
   }
-
-  return function(tile, done) {
-    getTile(db, source, tile, done);
-  };
 }
 
 function getVT(db, source, tile, done) {
