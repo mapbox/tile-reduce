@@ -25,6 +25,8 @@ function tileReduce(options) {
   var pauseLimit = 5000;
   var start = Date.now();
 
+  process.stderr.write('Starting up ' + cpus + ' workers... ');
+
   for (var i = 0; i < cpus; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
     worker.stdout.pipe(binarysplit('\x1e')).pipe(process.stdout);
@@ -39,26 +41,46 @@ function tileReduce(options) {
   }
 
   var ee = new EventEmitter();
-  var timer = setInterval(updateStatus, 64);
+  var timer;
 
   function run() {
-    ee.emit('start');
+    process.stderr.write('Job started.\n');
 
-    if (!options.tiles && options.sources[0].mbtiles) {
-      // mbtiles zxystream
-      var db = new MBTiles(options.sources[0].mbtiles, function(err) {
-        if (err) throw err;
-        tileStream = db.createZXYStream({batch: pauseLimit}).pipe(binarysplit()).on('data', handleZXYLine);
-      });
+    ee.emit('start');
+    timer = setInterval(updateStatus, 64);
+
+    var tiles = cover(options);
+
+    if (tiles) {
+      // JS tile array, GeoJSON or bbox
+      process.stderr.write('Processing ' + tiles.length + ' tiles.\n');
+      tileStream = streamArray(tiles).on('data', handleTile);
 
     } else if (typeof options.tiles === 'string') {
       // text file tile stream ("x y z\n")
+      process.stderr.write('Processing tile coords from ' + path.basename(options.tiles) + '.\n');
       tileStream = fs.createReadStream(options.tiles);
       tileStream.pipe(binarysplit()).on('data', handleTileLine);
 
     } else {
-      // JS tile array, GeoJSON or bbox
-      tileStream = streamArray(cover(options.tiles)).on('data', handleTile);
+      // try to automatically get tiles from mbtiles
+      var source;
+      for (var i = 0; i < options.sources.length; i++) {
+        if (options.sources[i].mbtiles) {
+          source = options.sources[i];
+          break;
+        }
+      }
+      if (source) {
+        process.stderr.write('Processing tile coords from "' + source.name + '" source.\n');
+        var db = new MBTiles(source.mbtiles, function(err) {
+          if (err) throw err;
+          tileStream = db.createZXYStream().pipe(binarysplit()).on('data', handleZXYLine);
+        });
+
+      } else {
+        throw new Error('No area or tiles specified for the job.');
+      }
     }
   }
 
@@ -101,16 +123,16 @@ function tileReduce(options) {
   }
 
   function updateStatus() {
-    if (process.stderr.cursorTo) {
-      var s = Math.floor((Date.now() - start) / 1000);
-      var h = Math.floor(s / 3600);
-      var m = Math.floor((s - h * 3600) / 60);
-      var time = (h ? h + 'h ' : '') + (h || m ? m + 'm ' : '') + (s % 60) + 's';
+    if (!process.stderr.cursorTo) return;
 
-      process.stderr.cursorTo(0);
-      process.stderr.write(tilesDone + ' tiles processed in ' + time);
-      process.stderr.clearLine(1);
-    }
+    var s = Math.floor((Date.now() - start) / 1000);
+    var h = Math.floor(s / 3600);
+    var m = Math.floor((s - h * 3600) / 60);
+    var time = (h ? h + 'h ' : '') + (h || m ? m + 'm ' : '') + (s % 60) + 's';
+
+    process.stderr.cursorTo(0);
+    process.stderr.write(tilesDone + ' tiles processed in ' + time);
+    process.stderr.clearLine(1);
   }
 
   return ee;
