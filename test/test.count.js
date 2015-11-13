@@ -4,7 +4,14 @@ var test = require('tap').test;
 var tileReduce = require('../src');
 var path = require('path');
 
-test('count implementation', function(t) {
+var sources = [
+  {name: 'osm', mbtiles: path.join(__dirname, '/fixtures/osm.mbtiles'), raw: true},
+  {name: 'tiger', mbtiles: path.join(__dirname, '/fixtures/tiger.mbtiles'), raw: true}
+];
+
+var mapPath = path.join(__dirname, 'fixtures/count.js');
+
+test('count implementation, bbox cover', function(t) {
   var numFeatures = 0;
   var startFired = false;
   var reduceFired = false;
@@ -12,11 +19,8 @@ test('count implementation', function(t) {
   tileReduce({
     bbox: [-122.05862045288086, 36.93768132842635, -121.97296142578124, 37.00378647456494],
     zoom: 15,
-    map: path.join(__dirname, 'fixtures/count.js'),
-    sources: [
-      {name: 'osm', mbtiles: path.join(__dirname, '/fixtures/osm.mbtiles'), raw: true},
-      {name: 'tiger', mbtiles: path.join(__dirname, '/fixtures/tiger.mbtiles'), raw: true}
-    ]
+    map: mapPath,
+    sources: sources
   })
   .on('start', function() {
     startFired = true;
@@ -26,9 +30,27 @@ test('count implementation', function(t) {
     reduceFired = true;
   })
   .on('end', function() {
-    t.equal(numFeatures, 36597, 'found all features');
+    t.equal(numFeatures, 16182, 'found all features in given bbox');
     t.equal(startFired, true, 'start fired');
     t.equal(reduceFired, true, 'reduce fired');
     t.end();
   });
 });
+
+test('count implementation, mbtiles cover', function(t) {
+  var numFeatures = 0;
+
+  tileReduce({
+    zoom: 15,
+    map: mapPath,
+    sources: sources
+  })
+  .on('reduce', function(num) {
+    numFeatures += num;
+  })
+  .on('end', function() {
+    t.equal(numFeatures, 36597, 'found all features in overlapping mbtiles');
+    t.end();
+  });
+});
+
