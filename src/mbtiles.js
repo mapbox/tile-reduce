@@ -1,9 +1,8 @@
 'use strict';
 
-var MBTiles = require('mbtiles');
 var zlib = require('zlib');
-var VectorTile = require('vector-tile').VectorTile;
-var Pbf = require('pbf');
+var MBTiles = require('mbtiles');
+var parseVT = require('./vt');
 
 module.exports = mbTilesVT;
 
@@ -43,27 +42,6 @@ function getVT(db, source, tile, done) {
 
   function tileUnzipped(err, data) {
     if (err) done(err);
-    else if (source.raw) done(null, new VectorTile(new Pbf(data)).layers);
-    else done(null, toGeoJSON(new VectorTile(new Pbf(data)), tile, source));
+    done(null, parseVT(data, tile, source));
   }
-}
-
-function toGeoJSON(vt, tile, source) {
-  var layers = Object.keys(vt.layers);
-  var collections = {};
-
-  for (var i = 0; i < layers.length; i++) {
-    if (!source.layers || source.layers.indexOf(layers[i]) !== -1) {
-      collections[layers[i]] = {
-        type: 'FeatureCollection',
-        features: []
-      };
-      for (var k = 0; k < vt.layers[layers[i]].length; k++) {
-        collections[layers[i]].features.push(
-          vt.layers[layers[i]].feature(k).toGeoJSON(tile[0], tile[1], tile[2])
-        );
-      }
-    }
-  }
-  return collections;
 }
