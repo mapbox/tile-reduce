@@ -10,7 +10,7 @@ test('mbtiles - raw parse', function(t) {
     mbtiles: path.join(__dirname, '/fixtures/osm.mbtiles'),
     raw: true
   };
-  var getTile = mbtiles(source, function(err) {
+  mbtiles(source, function(err, getTile) {
     t.notOk(err, 'osm.mbtiles getTiles init without error');
 
     getTile([5276, 12757, 15], function(err, layers) {
@@ -28,7 +28,7 @@ test('mbtiles - full GeoJSON parse', function(t) {
     name: 'osm',
     mbtiles: path.join(__dirname, '/fixtures/osm.mbtiles')
   };
-  var getTile = mbtiles(source, function(err) {
+  mbtiles(source, function(err, getTile) {
     t.notOk(err, 'osm.mbtiles getTiles init without error');
 
     getTile([5276, 12757, 15], function(err, layers) {
@@ -51,7 +51,7 @@ test('mbtiles - sparse GeoJSON parse', function(t) {
     mbtiles: path.join(__dirname, '/fixtures/osm.mbtiles'),
     layers: ['buildings']
   };
-  var getTile = mbtiles(source, function(err) {
+  mbtiles(source, function(err, getTile) {
     t.notOk(err, 'osm.mbtiles getTiles init without error');
 
     getTile([5276, 12757, 15], function(err, layers) {

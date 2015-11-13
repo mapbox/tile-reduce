@@ -11,14 +11,18 @@ JSON.parse(process.argv[3]).forEach(function(source) {
 });
 
 function loadSource(source, done) {
-  if (source.mbtiles) sources.push({name: source.name, getTile: require('./mbtiles')(source, done)});
-  else if (source.url) sources.push({name: source.name, getTile: require('./remote')(source, done)});
+  var loaded = {name: source.name};
+  sources.push(loaded);
+
+  if (source.mbtiles) require('./mbtiles')(source, done);
+  else if (source.url) require('./remote')(source, done);
   else throw new Error('Unknown source type');
 }
 
-q.await(function(err) {
+q.awaitAll(function(err, results) {
   if (err) throw err;
-  else process.send({ready: true});
+  for (var i = 0; i < results.length; i++) sources[i].getTile = results[i];
+  process.send({ready: true});
 });
 
 process.on('message', function(tile) {
