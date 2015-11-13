@@ -20,7 +20,7 @@ function zoomTiles(tiles, zoom) {
     var tile = tiles[i];
 
     if (tile[2] === zoom) zoomed.push(tile);
-    else if (tile[2] > zoom) throw new Error('Tile zoom is bigger than expected.');
+    else if (tile[2] > zoom) throw new Error('Tile zoom is higher than expected.');
     else {
       var z2 = Math.pow(2, zoom - tile[2]);
 
