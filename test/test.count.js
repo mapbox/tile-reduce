@@ -20,7 +20,8 @@ test('count implementation, bbox cover', function(t) {
     bbox: [-122.05862045288086, 36.93768132842635, -121.97296142578124, 37.00378647456494],
     zoom: 15,
     map: mapPath,
-    sources: sources
+    sources: sources,
+    log: false
   })
   .on('start', function() {
     startFired = true;
@@ -43,7 +44,8 @@ test('count implementation, mbtiles cover', function(t) {
   tileReduce({
     zoom: 15,
     map: mapPath,
-    sources: sources
+    sources: sources,
+    log: false
   })
   .on('reduce', function(num) {
     numFeatures += num;

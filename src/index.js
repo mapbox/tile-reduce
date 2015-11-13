@@ -25,7 +25,7 @@ function tileReduce(options) {
   var pauseLimit = 5000;
   var start = Date.now();
 
-  process.stderr.write('Starting up ' + cpus + ' workers... ');
+  log('Starting up ' + cpus + ' workers... ');
 
   for (var i = 0; i < cpus; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
@@ -44,7 +44,7 @@ function tileReduce(options) {
   var timer;
 
   function run() {
-    process.stderr.write('Job started.\n');
+    log('Job started.\n');
 
     ee.emit('start');
     timer = setInterval(updateStatus, 64);
@@ -53,12 +53,12 @@ function tileReduce(options) {
 
     if (tiles) {
       // JS tile array, GeoJSON or bbox
-      process.stderr.write('Processing ' + tiles.length + ' tiles.\n');
+      log('Processing ' + tiles.length + ' tiles.\n');
       tileStream = streamArray(tiles).on('data', handleTile);
 
     } else if (typeof options.tiles === 'string') {
       // text file tile stream ("x y z\n")
-      process.stderr.write('Processing tile coords from ' + path.basename(options.tiles) + '.\n');
+      log('Processing tile coords from ' + path.basename(options.tiles) + '.\n');
       tileStream = fs.createReadStream(options.tiles);
       tileStream.pipe(binarysplit()).on('data', handleTileLine);
 
@@ -72,7 +72,7 @@ function tileReduce(options) {
         }
       }
       if (source) {
-        process.stderr.write('Processing tile coords from "' + source.name + '" source.\n');
+        log('Processing tile coords from "' + source.name + '" source.\n');
         var db = new MBTiles(source.mbtiles, function(err) {
           if (err) throw err;
           tileStream = db.createZXYStream().pipe(binarysplit()).on('data', handleZXYLine);
@@ -117,13 +117,13 @@ function tileReduce(options) {
 
     clearTimeout(timer);
     updateStatus();
-    process.stderr.write('.\n');
+    log('.\n');
 
     ee.emit('end');
   }
 
   function updateStatus() {
-    if (!process.stderr.cursorTo) return;
+    if (options.log === false || !process.stderr.cursorTo) return;
 
     var s = Math.floor((Date.now() - start) / 1000);
     var h = Math.floor(s / 3600);
@@ -133,6 +133,10 @@ function tileReduce(options) {
     process.stderr.cursorTo(0);
     process.stderr.write(tilesDone + ' tiles processed in ' + time);
     process.stderr.clearLine(1);
+  }
+
+  function log(str) {
+    if (options.log !== false) process.stderr.write(str);
   }
 
   return ee;
