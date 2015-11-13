@@ -54,7 +54,7 @@ module.exports = function (coverArea, opts){
   return ee;
 };
 
-function getRemoteVectorTile(tile, tileLayer, done){
+function getRemoteVectorTile(tile, tileLayer, method, done){
   var url = tileLayer.url.split('{x}').join(tile[0]);
   url = url.split('{y}').join(tile[1]);
   url = url.split('{z}').join(tile[2]);
@@ -62,10 +62,20 @@ function getRemoteVectorTile(tile, tileLayer, done){
   var requestOpts = {
     url: url,
     gzip: true,
-    encoding: null
+    encoding: null,
+    method: method || 'GET'
   };
   request(requestOpts, function(err, res, body) {
-    getTileFeatures(tile, body, tileLayer, done);
+    if (method == 'HEAD') {
+      var layers = {
+        name:tileLayer.name,
+        layers:['head'],
+        head:res
+      };
+      done(null, layers);
+    } else {
+      getTileFeatures(tile, body, tileLayer, done);
+    }
   });
 }
 
@@ -180,7 +190,7 @@ function sendData (tiles, workers, opts){
     var layerCollection = {};
     var q = queue(4);
     opts.tileLayers.forEach(function(tileLayer){
-      if (tileLayer.url) q.defer(getRemoteVectorTile, tile, tileLayer);
+      if (tileLayer.url) q.defer(getRemoteVectorTile, tile, tileLayer, opts.requestMethod);
       if (tileLayer.mbtiles) q.defer(getLocalVectorTile, tile, tileLayer, dbs);
     });
     q.awaitAll(function(err, res){
