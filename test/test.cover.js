@@ -67,3 +67,26 @@ test('cover -- tiles & rezoom', function(t) {
   t.equal(tiles[0][2], 2, 'tiles should be at zoom 2');
   t.end();
 });
+
+test('cover -- tile zoom is higher than expected', function(t) {
+  var options = {
+    zoom: 2,
+    tiles: [
+      [0, 0, 8]
+    ]
+  };
+  t.throws(function() {
+    cover(options);
+  });
+
+  t.end();
+});
+
+test('cover -- empty cover', function(t) {
+  var options = {
+    zoom: 2
+  };
+  t.equal(cover(options), null, 'cover without info options is null');
+
+  t.end();
+});
