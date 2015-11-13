@@ -63,13 +63,12 @@ function tileReduce(options) {
       tileStream.pipe(binarysplit()).on('data', handleTileLine);
 
     } else {
-      // try to automatically get tiles from mbtiles
+      // try to get tiles from mbtiles (either specified by sourceCover or first encountered)
       var source;
       for (var i = 0; i < options.sources.length; i++) {
-        if (options.sources[i].mbtiles) {
-          source = options.sources[i];
-          break;
-        }
+        source = options.sources[i];
+        if (options.sources[i].mbtiles && (!options.sourceCover || options.sourceCover === source.name)) break;
+        source = null;
       }
       if (source) {
         log('Processing tile coords from "' + source.name + '" source.\n');
@@ -79,7 +78,9 @@ function tileReduce(options) {
         });
 
       } else {
-        throw new Error('No area or tiles specified for the job.');
+        throw new Error(options.sourceCover ?
+          'Specified source for cover not found.' :
+          'No area or tiles specified for the job.');
       }
     }
   }
