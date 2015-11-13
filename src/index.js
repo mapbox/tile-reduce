@@ -6,17 +6,18 @@ var EventEmitter = require('events').EventEmitter;
 var cpus = require('os').cpus().length;
 var fork = require('child_process').fork;
 var path = require('path');
-var fs = require('fs');
 var binarysplit = require('binary-split');
 var cover = require('./cover');
 var streamArray = require('stream-array');
 var MBTiles = require('mbtiles');
+var through = require('through2');
 
 // Suppress max listener warnings. We need at least 1 listener per worker.
 process.stdout.setMaxListeners(0);
 process.stderr.setMaxListeners(0);
 
 function tileReduce(options) {
+
   var workers = [];
   var workersReady = 0;
   var tileStream = null;
@@ -24,6 +25,16 @@ function tileReduce(options) {
   var tilesSent = 0;
   var pauseLimit = 5000;
   var start = Date.now();
+
+  if (options.tileStream) {
+    // Pass through a dummy pipe. This ensures the stream is in the proper mode.
+    // See last paragraph of the 'classic readable streams' section at
+    // https://github.com/substack/stream-handbook#classic-readable-streams
+    options.tileStream = options.tileStream
+      .pipe(through.obj(function(chunk, enc, done) {
+        done(null, chunk);
+      }));
+  }
 
   log('Starting up ' + cpus + ' workers... ');
 
@@ -56,12 +67,11 @@ function tileReduce(options) {
       log('Processing ' + tiles.length + ' tiles.\n');
       tileStream = streamArray(tiles).on('data', handleTile);
 
-    } else if (typeof options.tiles === 'string') {
-      // text file tile stream ("x y z\n")
-      log('Processing tile coords from ' + path.basename(options.tiles) + '.\n');
-      tileStream = fs.createReadStream(options.tiles);
-      tileStream.pipe(binarysplit()).on('data', handleTileLine);
-
+    } else if (options.tileStream) {
+      log('Processing tile coords from tile stream.\n');
+      tileStream = options.tileStream;
+      tileStream.on('data', handleTileStreamLine);
+      tileStream.resume();
     } else {
       // try to get tiles from mbtiles (either specified by sourceCover or first encountered)
       var source;
@@ -95,8 +105,12 @@ function tileReduce(options) {
     }
   }
 
-  function handleTileLine(line) {
-    handleTile(line.toString().split(' ').map(Number));
+  function handleTileStreamLine(line) {
+    var tile = line;
+    if (typeof line === 'string' || line instanceof Buffer) {
+      tile = line.toString().split(' ');
+    }
+    handleTile(tile.map(Number));
   }
 
   function handleZXYLine(line) {
