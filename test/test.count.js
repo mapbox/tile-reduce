@@ -11,6 +11,11 @@ var sources = [
   {name: 'tiger', mbtiles: path.join(__dirname, '/fixtures/tiger.mbtiles'), raw: true}
 ];
 
+var remoteSources = [
+  {name: 'osm', url: 'https://b.tiles.mapbox.com/v4/morganherlocker.3vsvfjjw/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ', raw: true},
+  {name: 'tiger', url: 'https://b.tiles.mapbox.com/v4/morganherlocker.4c81vjdd/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ', raw: true}
+];
+
 var mapPath = path.join(__dirname, 'fixtures/count.js');
 
 test('count implementation, bbox cover', function(t) {
@@ -60,8 +65,6 @@ test('count implementation, mbtiles cover', function(t) {
 
 test('count implementation, tileStream cover', function(t) {
   var numFeatures = 0;
-  var startFired = false;
-  var reduceFired = false;
 
   tileReduce({
     tileStream: fs.createReadStream(path.join(__dirname, 'fixtures/tilelist')).pipe(split()),
@@ -70,17 +73,30 @@ test('count implementation, tileStream cover', function(t) {
     sources: sources,
     log: false
   })
-  .on('start', function() {
-    startFired = true;
-  })
   .on('reduce', function(num) {
     numFeatures += num;
-    reduceFired = true;
   })
   .on('end', function() {
     t.equal(numFeatures, 16182, 'found all features in listed tiles');
-    t.equal(startFired, true, 'start fired');
-    t.equal(reduceFired, true, 'reduce fired');
+    t.end();
+  });
+});
+
+test('count implementation, remote sources', function(t) {
+  var numFeatures = 0;
+
+  tileReduce({
+    tiles: [[5276, 12757, 15]],
+    zoom: 15,
+    map: mapPath,
+    sources: remoteSources,
+    log: false
+  })
+  .on('reduce', function(num) {
+    numFeatures += num;
+  })
+  .on('end', function() {
+    t.equal(numFeatures, 857, 'found all features in listed tiles');
     t.end();
   });
 });
