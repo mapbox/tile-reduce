@@ -6,12 +6,12 @@ var tilecover = require('tile-cover');
 var bboxPolygon = require('turf-bbox-polygon');
 
 function cover(options) {
-  if (options.tiles) return zoomTiles(options.tiles, options.zoom);
+  if (Array.isArray(options.tiles)) return zoomTiles(options.tiles, options.zoom);
 
   var area = options.bbox ? bboxPolygon(options.bbox).geometry :
     options.geojson ? options.geojson.geometry || options.geojson : null;
 
-  return tilecover.tiles(area, {min_zoom: options.zoom, max_zoom: options.zoom});
+  return area ? tilecover.tiles(area, {min_zoom: options.zoom, max_zoom: options.zoom}) : null;
 }
 
 function zoomTiles(tiles, zoom) {
