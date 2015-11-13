@@ -3,6 +3,8 @@
 var test = require('tap').test;
 var tileReduce = require('../src');
 var path = require('path');
+var fs = require('fs');
+var split = require('binary-split');
 
 var sources = [
   {name: 'osm', mbtiles: path.join(__dirname, '/fixtures/osm.mbtiles'), raw: true},
@@ -56,3 +58,29 @@ test('count implementation, mbtiles cover', function(t) {
   });
 });
 
+test('count implementation, tileStream cover', function(t) {
+  var numFeatures = 0;
+  var startFired = false;
+  var reduceFired = false;
+
+  tileReduce({
+    tileStream: fs.createReadStream(path.join(__dirname, 'fixtures/tilelist')).pipe(split()),
+    zoom: 15,
+    map: mapPath,
+    sources: sources,
+    log: false
+  })
+  .on('start', function() {
+    startFired = true;
+  })
+  .on('reduce', function(num) {
+    numFeatures += num;
+    reduceFired = true;
+  })
+  .on('end', function() {
+    t.equal(numFeatures, 16182, 'found all features in listed tiles');
+    t.equal(startFired, true, 'start fired');
+    t.equal(reduceFired, true, 'reduce fired');
+    t.end();
+  });
+});
