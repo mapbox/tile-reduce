@@ -63,3 +63,10 @@ test('mbtiles - sparse GeoJSON parse', function(t) {
     });
   });
 });
+
+test('mbtiles - invalid path', function(t) {
+  mbtiles({name: 'osm', mbtiles: path.join(__dirname, 'fixtures/tilelist')}, function(err) {
+    t.ok(err, 'invalid mbtiles path returns error');
+    t.end();
+  });
+});
