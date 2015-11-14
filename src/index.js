@@ -137,6 +137,7 @@ function tileReduce(options) {
     ee.emit('end');
   }
 
+  /* istanbul ignore next */
   function updateStatus() {
     if (options.log === false || !process.stderr.cursorTo) return;
 
