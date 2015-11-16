@@ -63,6 +63,25 @@ test('count implementation, mbtiles cover', function(t) {
   });
 });
 
+test('count implementation, explicit mbtiles cover', function(t) {
+  var numFeatures = 0;
+
+  tileReduce({
+    zoom: 15,
+    map: mapPath,
+    sources: sources,
+    sourceCover: 'tiger',
+    log: false
+  })
+  .on('reduce', function(num) {
+    numFeatures += num;
+  })
+  .on('end', function() {
+    t.equal(numFeatures, 36597, 'found all features in overlapping mbtiles');
+    t.end();
+  });
+});
+
 test('count implementation, tileStream cover', function(t) {
   var numFeatures = 0;
 
