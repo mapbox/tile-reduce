@@ -16,25 +16,38 @@ A tile-reduce processor is made of two parts; the map script and the reduce scri
 
 ### map script
 
-// TODO describe map script
+The map script operates on each individual tile. It's purpose is to receive one tile at a time, do analysis or processing on the tile, and write data and send results to the reduce script.
+
+// TODO show a simple example
 
 ### reduce script
 
-// TODO describe the reduce script
+The reduce script serves both to initialize tile-reduce with job options, and to handle reducing results returned by the map script for each tile.
 
+// TODO show a simple example
 
 ## options
 
 ### supported tile sources
 
+sources are specified as an array in the `sources` option: 
+
+```
+sources: [
+	/* source objects */
+]
+```
+
 #### MBTiles
 
 ```
-{
-  name: 'osmdata',
-  mbtiles: __dirname+'/latest.planet.mbtiles',
-  layers: ['osm']
-}
+sources: [
+  {
+    name: 'osmdata',
+    mbtiles: __dirname+'/latest.planet.mbtiles',
+    layers: ['osm']
+  }
+]
 ```
 
 Mbtiles are preferred for large scale analysis. Create your own mbtiles from vector data using [tippecanoe](https://github.com/mapbox/tippecanoe), or use [OSM QA Tiles](http://osmlab.github.io/osm-qa-tiles/) to analyze OpenStreetMap data.
@@ -42,11 +55,13 @@ Mbtiles are preferred for large scale analysis. Create your own mbtiles from vec
 #### URL
 
 ```
-{
-  name: 'streets',
-  url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf',
-  layers: ['roads']
-}
+sources: [
+  {
+    name: 'streets',
+    url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf',
+    layers: ['roads']
+  }
+]
 ```
 
 ### specifying job area
@@ -67,7 +82,7 @@ geojson: {"type": "Polygon", "coordinates": [/* coordinates */]}
 
 The polygon will be split into tiles by [tile-cover](https://github.com/mapbox/tile-cover).
 
-#### tiles - array
+#### tile array
 
 ```
 tiles: [
@@ -76,17 +91,22 @@ tiles: [
 ]
 ```
 
-#### tiles - file stream
+#### tile stream
 
 ```
-tiles: '/path/to/tilelist'
+tileStream: /* an object mode node stream */
 ```
 
-streams a file of line separated `x y z` tile coordinates. The file should be formatted like so: 
+Tiles can be read from an object mode [node stream](https://nodejs.org/api/stream.html). Each object in the stream should be either a string in the format `x y z` or an array in the format `[x, y, z]`. Line separated tile list files can easily be converted into the appropriate object mode streams using [binary-split](https://github.com/maxogden/binary-split):
 
 ```
-100 200 12
-100 201 12
+var split = require('binary-split'),
+	fs = require('fs');
+
+var options = {
+	tileStream: fs.createReadStream('/path/to/tile-file').pipe(split()),
+	// ...
+};
 ```
 
 Tile list files can be generated from mbtiles using [tippecanoe's](https://github.com/mapbox/tippecanoe) `tippecanoe-enumerate` utility
@@ -95,6 +115,13 @@ Tile list files can be generated from mbtiles using [tippecanoe's](https://githu
 tippecanoe-enumerate /path/to/source.mbtiles | awk '{print $3, $4, $2} > tilelist'
 ```
 
+### output
+
+By default, any data written from workers is piped to `process.stdout` on the main process. You can pipe to an alternative writable stream using the `output` option.
+
+```
+output: fs.createWriteStream('output-file'),
+```
 
 ## example
 
