@@ -23,24 +23,21 @@ function tileReduce(options) {
   var tileStream = null;
   var tilesDone = 0;
   var tilesSent = 0;
-  var pauseLimit = 5000;
+  var pauseLimit = options.batch || 5000;
   var start = Date.now();
 
   if (options.tileStream) {
     // Pass through a dummy pipe. This ensures the stream is in the proper mode.
     // See last paragraph of the 'classic readable streams' section at
     // https://github.com/substack/stream-handbook#classic-readable-streams
-    options.tileStream = options.tileStream
-      .pipe(through.obj(function(chunk, enc, done) {
-        done(null, chunk);
-      }));
+    options.tileStream = options.tileStream.pipe(through.obj());
   }
 
   log('Starting up ' + cpus + ' workers... ');
 
   for (var i = 0; i < cpus; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
-    worker.stdout.pipe(binarysplit('\x1e')).pipe(process.stdout);
+    worker.stdout.pipe(binarysplit('\x1e')).pipe(options.output || process.stdout);
     worker.stderr.pipe(process.stderr);
     worker.on('message', handleMessage);
     workers.push(worker);
@@ -151,6 +148,7 @@ function tileReduce(options) {
     process.stderr.clearLine(1);
   }
 
+  /* istanbul ignore next */
   function log(str) {
     if (options.log !== false) process.stderr.write(str);
   }
