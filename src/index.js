@@ -44,7 +44,7 @@ function tileReduce(options) {
   }
 
   function handleMessage(message) {
-    if (message.reduce) reduce(message.value);
+    if (message.reduce) reduce(message.value, message.tile);
     else if (message.ready && ++workersReady === workers.length) run();
   }
 
@@ -95,7 +95,9 @@ function tileReduce(options) {
   var paused = false;
 
   function handleTile(tile) {
-    workers[tilesSent++ % workers.length].send(tile);
+    var workerId = tilesSent++ % workers.length;
+    ee.emit('map', tile, workerId);
+    workers[workerId].send(tile);
     if (!paused && tilesSent - tilesDone > pauseLimit) {
       paused = true;
       tileStream.pause();
@@ -115,8 +117,8 @@ function tileReduce(options) {
     handleTile([+tile[1], +tile[2], +tile[0]]);
   }
 
-  function reduce(value) {
-    if (value !== null && value !== undefined) ee.emit('reduce', value);
+  function reduce(value, tile) {
+    if (value !== null && value !== undefined) ee.emit('reduce', value, tile);
     if (paused && tilesSent - tilesDone < (pauseLimit / 2)) {
       paused = false;
       tileStream.resume();

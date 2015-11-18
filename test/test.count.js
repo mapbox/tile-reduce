@@ -20,8 +20,6 @@ var mapPath = path.join(__dirname, 'fixtures/count.js');
 
 test('count implementation, bbox cover', function(t) {
   var numFeatures = 0;
-  var startFired = false;
-  var reduceFired = false;
 
   tileReduce({
     bbox: [-122.05862045288086, 36.93768132842635, -121.97296142578124, 37.00378647456494],
@@ -30,17 +28,11 @@ test('count implementation, bbox cover', function(t) {
     sources: sources,
     log: false
   })
-  .on('start', function() {
-    startFired = true;
-  })
   .on('reduce', function(num) {
     numFeatures += num;
-    reduceFired = true;
   })
   .on('end', function() {
     t.equal(numFeatures, 16182, 'found all features in given bbox');
-    t.equal(startFired, true, 'start fired');
-    t.equal(reduceFired, true, 'reduce fired');
     t.end();
   });
 });

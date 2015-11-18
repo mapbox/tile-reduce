@@ -43,6 +43,11 @@ process.on('message', function(tile) {
       if (!results[i]) return process.send({reduce: true});
     }
 
+    function gotResults(err, value) {
+      if (err) throw err;
+      process.send({reduce: true, value: value, tile: tile});
+    }
+
     map(data, tile, write, gotResults);
   }
 });
@@ -50,9 +55,4 @@ process.on('message', function(tile) {
 function write(data) {
   process.stdout.write((typeof data === 'string') ? data : JSON.stringify(data));
   process.stdout.write('\x1e');
-}
-
-function gotResults(err, value) {
-  if (err) throw err;
-  process.send({reduce: true, value: value});
 }
