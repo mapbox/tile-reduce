@@ -11,7 +11,7 @@ test('TileHandler', function(t) {
   var workers = [
     {
       send: function(tile) {
-        tilesSent++;
+        if (tile.length === 3) tilesSent++;
       }
     }
   ];

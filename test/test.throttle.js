@@ -30,8 +30,8 @@ test('throttle 10 ops/sec', function(t) {
   })
   .on('end', function() {
     Object.keys(intervals).forEach(function(interval) {
-      if (intervals[interval] > limit*5)
-        t.fail(intervals[interval] + ' ops/sec detected; should be ' + limit + ' ops/sec');
+      if (intervals[interval] > maxrate)
+        t.fail(intervals[interval] + ' ops/sec detected; should be ' + maxrate + ' ops/sec');
       else t.pass(intervals[interval] + ' ops/sec detected');
     });
     t.end();

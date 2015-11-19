@@ -21,8 +21,6 @@ function tileReduce(options) {
   var workers = [];
   var workersReady = 0;
   var tileStream = null;
-  var tilesDone = 0;
-  var tilesSent = 0;
   var pauseLimit = options.batch || 5000;
   var start = Date.now();
   var handler = new TileHandler(workers, tileStream, pauseLimit, options.maxrate);
@@ -108,11 +106,11 @@ function tileReduce(options) {
 
   function reduce(value) {
     if (value !== null && value !== undefined) ee.emit('reduce', value);
-    if (paused && tilesSent - tilesDone < (pauseLimit / 2)) {
-      paused = false;
-      tileStream.resume();
+    if (handler.paused && handler.tilesSent - handler.tilesDone < (handler.pauseLimit / 2)) {
+      handler.paused = false;
+      handler.tileStream.resume();
     }
-    if (++tilesDone === tilesSent) shutdown();
+    if (++handler.tilesDone === handler.tilesSent) shutdown();
   }
 
   function shutdown() {
@@ -135,7 +133,7 @@ function tileReduce(options) {
     var time = (h ? h + 'h ' : '') + (h || m ? m + 'm ' : '') + (s % 60) + 's';
 
     process.stderr.cursorTo(0);
-    process.stderr.write(tilesDone + ' tiles processed in ' + time);
+    process.stderr.write(handler.tilesDone + ' tiles processed in ' + time);
     process.stderr.clearLine(1);
   }
 

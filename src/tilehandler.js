@@ -12,15 +12,15 @@ var TileHandler = function(workers, tileStream, pauseLimit, maxrate) {
   this.paused = false;
 
   this.handleTile = function(tile) {
-    if(workers.length < 1) throw new Error('No workers initialized.');
-    if(!tileStream) throw new Error('No tilestream initialized.');
+    if (workers.length < 1) throw new Error('No workers initialized.');
+    if (!tileStream) throw new Error('No tilestream initialized.');
     this.workers[this.tilesSent++ % this.workers.length].send(tile);
     if (!this.paused && this.tilesSent - this.tilesDone > this.pauseLimit) {
       this.paused = true;
       this.tileStream.pause();
     }
-  }
-  if(this.maxrate) this.handleTile = rateLimit(maxrate, 1000, this.handleTile);
-}
+  };
+  if (this.maxrate) this.handleTile = rateLimit(maxrate, 1000, this.handleTile);
+};
 
 module.exports = TileHandler;
