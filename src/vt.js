@@ -6,7 +6,9 @@ var Pbf = require('pbf');
 module.exports = parseData;
 
 function parseData(data, tile, source) {
-  var vt = new VectorTile(new Pbf(data));
+  var vt;
+  if (!data) vt = {layers: {}};
+  else vt = new VectorTile(new Pbf(data));
   return source.raw ? vt.layers : toGeoJSON(vt, tile, source);
 }
 

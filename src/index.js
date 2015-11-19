@@ -11,13 +11,13 @@ var cover = require('./cover');
 var streamArray = require('stream-array');
 var MBTiles = require('mbtiles');
 var through = require('through2');
+var TileHandler = require('./TileHandler');
 
 // Suppress max listener warnings. We need at least 1 listener per worker.
 process.stdout.setMaxListeners(0);
 process.stderr.setMaxListeners(0);
 
 function tileReduce(options) {
-
   var workers = [];
   var workersReady = 0;
   var tileStream = null;
@@ -25,6 +25,7 @@ function tileReduce(options) {
   var tilesSent = 0;
   var pauseLimit = options.batch || 5000;
   var start = Date.now();
+  var handler = new TileHandler(workers, tileStream, pauseLimit, options.maxrate);
 
   if (options.tileStream) {
     // Pass through a dummy pipe. This ensures the stream is in the proper mode.
@@ -62,7 +63,7 @@ function tileReduce(options) {
     if (tiles) {
       // JS tile array, GeoJSON or bbox
       log('Processing ' + tiles.length + ' tiles.\n');
-      tileStream = streamArray(tiles).on('data', handleTile);
+      tileStream = streamArray(tiles).on('data', handler.handleTile);
 
     } else if (options.tileStream) {
       log('Processing tile coords from tile stream.\n');
@@ -92,27 +93,17 @@ function tileReduce(options) {
     }
   }
 
-  var paused = false;
-
-  function handleTile(tile) {
-    workers[tilesSent++ % workers.length].send(tile);
-    if (!paused && tilesSent - tilesDone > pauseLimit) {
-      paused = true;
-      tileStream.pause();
-    }
-  }
-
   function handleTileStreamLine(line) {
     var tile = line;
     if (typeof line === 'string' || line instanceof Buffer) {
       tile = line.toString().split(' ');
     }
-    handleTile(tile.map(Number));
+    handler.handleTile(tile.map(Number));
   }
 
   function handleZXYLine(line) {
     var tile = line.toString().split('/');
-    handleTile([+tile[1], +tile[2], +tile[0]]);
+    handler.handleTile([+tile[1], +tile[2], +tile[0]]);
   }
 
   function reduce(value) {

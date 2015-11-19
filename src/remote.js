@@ -23,7 +23,8 @@ function getTile(source, tile, done) {
 
   tileRequest(url, function(err, res, body) {
     if (err) return done(err);
+    else if (res.statusCode === 200) return done(null, parseVT(body, tile, source));
+    else if (res.statusCode === 404) return done(null, parseVT(null, tile, source));
     else if (res.statusCode !== 200) return done(new Error('Server responded with status code ' + res.statusCode));
-    else done(null, parseVT(body, tile, source));
   });
 }
