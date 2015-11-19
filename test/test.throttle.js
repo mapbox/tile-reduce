@@ -1,203 +1,39 @@
-var test = require('tape');
-var cover = require('tile-cover').tiles;
-var sendTiles = require('../').sendTiles;
+'use strict';
 
-test('sendTiles - maxrate 50', function(t){
-  var geom = {
-    "type": "Polygon",
-    "coordinates": [
-      [
-        [
-          -121.61659240722658,
-          38.45681495946778
-        ],
-        [
-          -121.61659240722658,
-          38.662458581979436
-        ],
-        [
-          -121.32064819335939,
-          38.662458581979436
-        ],
-        [
-          -121.32064819335939,
-          38.45681495946778
-        ],
-        [
-          -121.61659240722658,
-          38.45681495946778
-        ]
-      ]
-    ]
-  };
+var test = require('tap').test;
+var tileReduce = require('../src');
+var path = require('path');
 
-  var tiles = cover(geom, {min_zoom: 15, max_zoom: 15});
-  var maxrate = 50;
-  opts = {
-    zoom: 12,
-    maxrate: maxrate,
-    tileLayers: [
-        {
-          name: 'streets',
-          url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
-          layers: ['road']
-        }
-      ],
-    map: __dirname+'/count.js'
-  };
+var sources = [
+  {name: 'osm', url: 'https://b.tiles.mapbox.com/v4/morganherlocker.3vsvfjjw/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ', raw: true},
+  {name: 'tiger', url: 'https://b.tiles.mapbox.com/v4/morganherlocker.4c81vjdd/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ', raw: true}
+];
 
-  var persec = 0;
-  var requests = 0;
-  var interval = setInterval(function(){
-    t.pass(persec);
-    persec = 0;
-    if(requests >= tiles.length) clearInterval(interval);
-  },1000);
+var mapPath = path.join(__dirname, 'fixtures/pass.js');
 
-  var workers = [
-    {
-      send: function(message){
-        persec++;
-        if(persec > maxrate) t.fail(persec + ' ops/sec');
-        requests++;
-      }
-    }
-  ];
-
-  sendTiles(tiles, workers, opts);
-
-  t.end();
-});
-
-test('sendTiles - maxrate 10000 (caps to 200/sec)', function(t){
-  var geom = {
-    "type": "Polygon",
-    "coordinates": [
-      [
-        [
-          -121.61659240722658,
-          38.45681495946778
-        ],
-        [
-          -121.61659240722658,
-          38.662458581979436
-        ],
-        [
-          -121.32064819335939,
-          38.662458581979436
-        ],
-        [
-          -121.32064819335939,
-          38.45681495946778
-        ],
-        [
-          -121.61659240722658,
-          38.45681495946778
-        ]
-      ]
-    ]
-  };
-
-  var tiles = cover(geom, {min_zoom: 15, max_zoom: 15});
-  var maxrate = 200;
-  opts = {
-    zoom: 12,
-    maxrate: 100000,
-    tileLayers: [
-        {
-          name: 'streets',
-          url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
-          layers: ['road']
-        }
-      ],
-    map: __dirname+'/count.js'
-  };
-
-  var persec = 0;
-  var requests = 0;
-  var interval = setInterval(function(){
-    t.pass(persec);
-    persec = 0;
-    if(requests >= tiles.length) clearInterval(interval);
-  },1000);
-
-  var workers = [
-    {
-      send: function(message){
-        persec++;
-        if(persec > maxrate) t.fail(persec + ' ops/sec');
-        requests++;
-      }
-    }
-  ];
-
-  sendTiles(tiles, workers, opts);
-
-  t.end();
-});
-
-test('sendTiles - maxrate default', function(t){
-  var geom = {
-    "type": "Polygon",
-    "coordinates": [
-      [
-        [
-          -121.61659240722658,
-          38.45681495946778
-        ],
-        [
-          -121.61659240722658,
-          38.662458581979436
-        ],
-        [
-          -121.32064819335939,
-          38.662458581979436
-        ],
-        [
-          -121.32064819335939,
-          38.45681495946778
-        ],
-        [
-          -121.61659240722658,
-          38.45681495946778
-        ]
-      ]
-    ]
-  };
-
-  var tiles = cover(geom, {min_zoom: 15, max_zoom: 15});
-  var maxrate = 200;
-  opts = {
-    zoom: 12,
-    tileLayers: [
-        {
-          name: 'streets',
-          url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ',
-          layers: ['road']
-        }
-      ],
-    map: __dirname+'/count.js'
-  };
-
-  var persec = 0;
-  var requests = 0;
-  var interval = setInterval(function(){
-    t.pass(persec);
-    persec = 0;
-    if(requests >= tiles.length) clearInterval(interval);
-  },1000);
-
-  var workers = [
-    {
-      send: function(message){
-        persec++;
-        if(persec > maxrate) t.fail(persec + ' ops/sec');
-        requests++;
-      }
-    }
-  ];
-
-  sendTiles(tiles, workers, opts);
-
-  t.end();
+test('throttle 10 ops/sec', function(t) {
+  var intervals = {};
+  var maxrate = 10;
+  tileReduce({
+    bbox: [-122.05862045288086, 36.93768132842635, -121.97296142578124, 37.00378647456494],
+    zoom: 15,
+    map: mapPath,
+    sources: sources,
+    log: false,
+    maxrate: maxrate
+  })
+  .on('reduce', function() {
+    var now = new Date();
+    var time = now.getMinutes() + ':' + now.getSeconds();
+    if (!intervals[time]) intervals[time] = 1;
+    else intervals[time]++;
+  })
+  .on('end', function() {
+    Object.keys(intervals).forEach(function(interval) {
+      if (intervals[interval] > maxrate)
+        t.fail(intervals[interval] + ' ops/sec detected; should be ' + maxrate + ' ops/sec');
+      else t.pass(intervals[interval] + ' ops/sec detected');
+    });
+    t.end();
+  });
 });
