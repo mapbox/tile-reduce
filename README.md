@@ -105,7 +105,7 @@ sources: [
 
 #### URL
 
-Remote Vector Tile sources accessible over HTTP work well for mashups of datasets and datasets that would not be practical to fit on a single machine. Be aware that HTTP requests are slower than mbtiles, and throttling is typically required to avoid disrupting servers at high tile volumes.
+Remote Vector Tile sources accessible over HTTP work well for mashups of datasets and datasets that would not be practical to fit on a single machine. Be aware that HTTP requests are slower than mbtiles, and throttling is typically required to avoid disrupting servers at high tile volumes. `maxrate` dictates how many requests per second will be made to each remote source.
 
 ```js
 sources: [
