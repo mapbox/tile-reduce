@@ -199,6 +199,58 @@ tilereduce({
 })
 ```
 
+## Events
+
+TileReduce returns an [EventEmitter]().
+
+### start
+
+Fired once all workers are initialized and before the first tiles are sent for processing
+
+```js
+tilereduce({/* ... */})
+.on('start', function () {
+	console.log('starting');
+});
+```
+
+### map 
+
+Fired just before a tile is sent to a worker. Receives the tile and worker number assigned to process the tile.
+
+```js
+tilereduce({/* ... */})
+.on('map', function (tile, workerId) {
+	console.log('about to process ' + JSON.stringify(tile) +' on worker '+workerId);
+});
+```
+
+### reduce 
+
+Fired when a tile has finished processing. Receives data returned in the map function's `done` callback (if any), and the tile.
+
+```js
+var count = 0;
+tilereduce({/* ... */})
+.on('reduce', function (result, tile) { 
+	console.log('got a count of ' + result + ' from ' + JSON.stringify(tile));
+	count++;
+});
+```
+
+### end
+
+Fired when all queued tiles have been processed. Use this event to output final reduce results.
+
+```js
+var count = 0;
+tilereduce({/* ... */})
+.on('end', function () {
+	console.log('Total count was: ' + count);
+});
+```
+
+
 ## Development
 
 ### Testing
