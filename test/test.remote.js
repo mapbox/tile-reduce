@@ -2,6 +2,7 @@
 
 var test = require('tap').test;
 var remote = require('../src/remote');
+var queue = require('queue-async');
 
 test('remote - raw parse', function(t) {
   var osmUrl = 'https://b.tiles.mapbox.com/v4/morganherlocker.3vsvfjjw/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
@@ -80,9 +81,8 @@ test('remote - raw invalid url - 401', function(t) {
   remote(source, function(err, getTile) {
     t.notOk(err, 'remote initialized without error');
     getTile([5276, 12757, 15], function(err, layers) {
-      t.ok(err, 'returns an error with a bad remote url');
-      t.equal(err.message, 'Server responded with status code 401', '401 error');
-      t.notOk(layers, 'does not return layers with a bad remote url');
+      t.notOk(err, 'does not return an error with a missing tile remote url');
+      t.notOk(layers, 'does not return layers with a missing tile remote url');
       t.end();
     });
   });
@@ -99,5 +99,43 @@ test('remote - raw invalid url - no server', function(t) {
       t.notOk(layers, 'does not return layers with a bad remote url');
       t.end();
     });
+  });
+});
+
+test('remote - throttle', function(t) {
+  var url = url = 'https://b.tiles.mapbox.com/v4/morganherlocker.4c81vjdd/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
+  var maxrate = 5;
+  var tile = [5276, 12757, 15];
+  var source = {name: 'osm', url: url, maxrate: maxrate};
+  var intervals = {};
+  var q = queue(100);
+
+  remote(source, function(err, getTile) {
+    t.notOk(err, 'remote initialized without error');
+
+    for (var i = 0; i < 100; i++) {
+      q.defer(request);
+    }
+
+    q.awaitAll(function() {
+      Object.keys(intervals).forEach(function(interval) {
+        if (intervals[interval] > maxrate * 3)
+          t.fail(intervals[interval] + ' ops/sec detected; should be ' + maxrate + ' ops/sec');
+        else t.pass(intervals[interval] + ' ops/sec detected');
+      });
+      t.end();
+    });
+
+    function request(cb) {
+      getTile(tile, function(err) {
+        if (err) t.error(err);
+
+        var now = new Date();
+        var time = now.getMinutes() + ':' + now.getSeconds();
+        if (!intervals[time]) intervals[time] = 1;
+        else intervals[time]++;
+        cb();
+      });
+    }
   });
 });
