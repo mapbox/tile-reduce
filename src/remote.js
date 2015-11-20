@@ -13,7 +13,7 @@ var tileRequest = request.defaults({
 });
 
 function remoteVT(source, ready) {
-  var getTile = function(source, tile, done) {
+  var getTile = function(tile, done) {
     var url = source.url
       .replace('{x}', tile[0])
       .replace('{y}', tile[1])
@@ -28,5 +28,5 @@ function remoteVT(source, ready) {
   };
 
   if (source.maxrate) getTile = rateLimit(source.maxrate, 1000, getTile);
-  ready(null, getTile.bind(null, source));
+  ready(null, getTile);
 }
