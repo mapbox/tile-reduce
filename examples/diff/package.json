@@ -1,7 +1,0 @@
-{
-  "name": "osm-tiger-diff",
-  "dependencies": {
-    "lineclip": "^1.1.5",
-    "linematch": "^1.0.3"
-  }
-}
