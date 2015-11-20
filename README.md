@@ -182,27 +182,38 @@ tilereduce({
 })
 ```
 
-#### Text File
+#### Source Cover
 
-Tile list files can be conveniently generated from mbtiles using [tippecanoe](https://github.com/mapbox/tippecanoe)'s' `tippecanoe-enumerate` utility.
+When using mbtiles sources, a list of tiles to process can be automatically retrieved from the source metadata
 
-```sh
-tippecanoe-enumerate /path/to/source.mbtiles | awk '{print $3, $4, $2} > tilelist'
+```js
+tilereduce({
+	sourceCover: 'osmdata',
+	sources: [
+		{
+			name: 'osmdata',
+			mbtiles: __dirname+'/latest.planet.mbtiles'
+		}
+	]
+	// ...
+})
 ```
 
-## Testing
+## Development
+
+### Testing
 
 ```sh
 npm test
 ```
 
-## Linting
+### Linting
 
 ```sh
 npm run lint
 ```
 
-## Test Coverage
+### Test Coverage
 
 ```sh
 npm run cover
