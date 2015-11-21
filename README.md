@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.org/mapbox/tile-reduce.svg)](https://travis-ci.org/mapbox/tile-reduce)
 
-TileReduce is a geoprocessing library that implements [MapReduce](http://en.wikipedia.org/wiki/MapReduce) to let you run scalable distributed spatial analysis using [Javascript](http://nodejs.org/) and [Mapbox Vector Tiles](https://www.mapbox.com/developers/vector-tiles/). TileReduce coordinates tasks across all available processors on a machine, so your analysis runs lightning fast with minimal optimization.
+TileReduce is a geoprocessing library that implements [MapReduce](http://en.wikipedia.org/wiki/MapReduce) to let you run scalable distributed spatial analysis using [Javascript](http://nodejs.org/) and [Mapbox Vector Tiles](https://www.mapbox.com/developers/vector-tiles/). TileReduce coordinates tasks across all available processors on a machine, so your analysis runs lightning fast.
 
 ## Install
 
