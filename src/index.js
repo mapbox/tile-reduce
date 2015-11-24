@@ -81,7 +81,7 @@ function tileReduce(options) {
         log('Processing tile coords from "' + source.name + '" source.\n');
         var db = new MBTiles(source.mbtiles, function(err) {
           if (err) throw err;
-          tileStream = db.createZXYStream().pipe(binarysplit()).on('data', handleZXYLine);
+          tileStream = db.createZXYStream().pipe(binarysplit('\n')).on('data', handleZXYLine);
         });
 
       } else {
