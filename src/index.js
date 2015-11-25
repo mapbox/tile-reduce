@@ -35,6 +35,8 @@ function tileReduce(options) {
   var maxWorkers = Math.min(cpus, options.maxWorkers || cpus);
   log('Starting up ' + maxWorkers + ' workers... ');
 
+  if (options.output) options.output.setMaxListeners(0);
+
   for (var i = 0; i < maxWorkers; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
     worker.stdout.pipe(binarysplit('\x1e')).pipe(options.output || process.stdout);
