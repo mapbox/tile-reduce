@@ -78,7 +78,7 @@ test('count implementation, tileStream cover', function(t) {
   var numFeatures = 0;
 
   tileReduce({
-    tileStream: fs.createReadStream(path.join(__dirname, 'fixtures/tilelist')).pipe(split()),
+    tileStream: fs.createReadStream(path.join(__dirname, 'fixtures/tilelist')).pipe(split('\n')),
     zoom: 15,
     map: mapPath,
     sources: sources,
