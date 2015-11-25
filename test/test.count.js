@@ -4,7 +4,7 @@ var test = require('tap').test;
 var tileReduce = require('../src');
 var path = require('path');
 var fs = require('fs');
-var split = require('binary-split');
+var split = require('split');
 
 var sources = [
   {name: 'osm', mbtiles: path.join(__dirname, '/fixtures/osm.mbtiles'), raw: true},

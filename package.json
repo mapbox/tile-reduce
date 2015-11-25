@@ -38,6 +38,7 @@
   "devDependencies": {
     "eslint": "^1.7.3",
     "eslint-config-mourner": "^1.0.1",
+    "split": "^1.0.0",
     "tap": "^2.2.0"
   },
   "eslintConfig": {

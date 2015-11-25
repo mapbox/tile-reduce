@@ -89,7 +89,7 @@ function tileReduce(options) {
         var db = new MBTiles(source.mbtiles, function(err) {
           if (err) throw err;
           tileStream = db.createZXYStream()
-            .pipe(binarysplit())
+            .pipe(binarysplit('\n'))
             .on('data', handleZXYLine)
             .on('end', streamEnded);
         });
