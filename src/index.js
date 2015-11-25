@@ -32,10 +32,10 @@ function tileReduce(options) {
     // https://github.com/substack/stream-handbook#classic-readable-streams
     options.tileStream = options.tileStream.pipe(through.obj());
   }
+  var maxWorkers = Math.min(cpus, options.maxWorkers || cpus);
+  log('Starting up ' + maxWorkers + ' workers... ');
 
-  log('Starting up ' + cpus + ' workers... ');
-
-  for (var i = 0; i < cpus; i++) {
+  for (var i = 0; i < maxWorkers; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
     worker.stdout.pipe(binarysplit('\x1e')).pipe(options.output || process.stdout);
     worker.stderr.pipe(process.stderr);
@@ -49,6 +49,7 @@ function tileReduce(options) {
   }
 
   var ee = new EventEmitter();
+  ee.workers = workers;
   var timer;
 
   function run() {

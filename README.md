@@ -52,6 +52,16 @@ tilereduce({
 	// ...
 })
 ```
+#### maxWorkers
+
+By default, TileReduce creates one worker process per CPU. `maxWorkers` may be used to limit the number of workers created
+
+```js
+tilereduce({
+  maxWorkers: 3,
+  // ...
+})
+```
 
 #### output
 
