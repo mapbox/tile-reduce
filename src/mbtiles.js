@@ -4,9 +4,9 @@ const zlib = require('zlib');
 const MBTiles = require('mbtiles');
 const parseVT = require('./vt');
 
-module.exports = mbTilesVT;
+module.exports = mbtiles;
 
-function mbTilesVT(source, ready) {
+function mbtiles(source, ready) {
   const db = new MBTiles(source.mbtiles, dbReady);
 
   function dbReady(err, db) {
@@ -22,12 +22,14 @@ function mbTilesVT(source, ready) {
 
   function getVT(tile, done) {
     db.getTile(tile[2], tile[0], tile[1], (err, data) => {
-      if (!err) zlib.unzip(data, (err, data) => {
-        if (err) done(err);
-        done(null, parseVT(data, tile, source));
-      });
+      if (!err) zlib.unzip(data, tileUnzipped);
       else if (err.message === 'Tile does not exist') done();
       else done(err);
     });
+
+    function tileUnzipped(err, data) {
+      if (err) done(err);
+      done(null, parseVT(data, tile, source));
+    }
   }
 }
