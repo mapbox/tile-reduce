@@ -16,7 +16,7 @@ function cover(options) {
 }
 
 function zoomTiles(tiles, zoom) {
-  let zoomed = [];
+  const zoomed = [];
   for (let i = 0; i < tiles.length; i++) {
     const tile = tiles[i];
 
