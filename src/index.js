@@ -2,29 +2,29 @@
 
 module.exports = tileReduce;
 
-var EventEmitter = require('events').EventEmitter;
-var cpus = require('os').cpus().length;
-var fork = require('child_process').fork;
-var path = require('path');
-var binarysplit = require('binary-split');
-var cover = require('./cover');
-var streamArray = require('stream-array');
-var MBTiles = require('mbtiles');
-var through = require('through2');
-
-// Suppress max listener warnings. We need at least 1 listener per worker.
-process.stdout.setMaxListeners(0);
-process.stderr.setMaxListeners(0);
+const EventEmitter = require('events').EventEmitter;
+const cpus = require('os').cpus().length;
+const fork = require('child_process').fork;
+const path = require('path');
+const binarysplit = require('binary-split');
+const cover = require('./cover');
+const streamArray = require('stream-array');
+const MBTiles = require('mbtiles');
+const through = require('through2');
 
 function tileReduce(options) {
 
-  var workers = [];
-  var workersReady = 0;
-  var tileStream = null;
-  var tilesDone = 0;
-  var tilesSent = 0;
-  var pauseLimit = options.batch || 5000;
-  var start = Date.now();
+  const ee = new EventEmitter();
+  const workers = ee.workers = [];
+  const pauseLimit = options.batch || 5000;
+  const start = Date.now();
+  const output = options.output || process.stdout;
+
+  let workersReady = 0;
+  let tileStream = null;
+  let tilesDone = 0;
+  let tilesSent = 0;
+  let timer;
 
   if (options.tileStream) {
     // Pass through a dummy pipe. This ensures the stream is in the proper mode.
@@ -32,14 +32,16 @@ function tileReduce(options) {
     // https://github.com/substack/stream-handbook#classic-readable-streams
     options.tileStream = options.tileStream.pipe(through.obj());
   }
-  var maxWorkers = Math.min(cpus, options.maxWorkers || cpus);
+  const maxWorkers = Math.min(cpus, options.maxWorkers || cpus);
   log('Starting up ' + maxWorkers + ' workers... ');
 
-  if (options.output) options.output.setMaxListeners(0);
+  // Suppress max listener warnings. We need at least 1 listener per worker.
+  process.stderr.setMaxListeners(0);
+  output.setMaxListeners(0);
 
-  for (var i = 0; i < maxWorkers; i++) {
-    var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
-    worker.stdout.pipe(binarysplit('\x1e')).pipe(options.output || process.stdout);
+  for (let i = 0; i < maxWorkers; i++) {
+    const worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
+    worker.stdout.pipe(binarysplit('\x1e')).pipe(output);
     worker.stderr.pipe(process.stderr);
     worker.on('message', handleMessage);
     workers.push(worker);
@@ -49,10 +51,6 @@ function tileReduce(options) {
     if (message.reduce) reduce(message.value, message.tile);
     else if (message.ready && ++workersReady === workers.length) run();
   }
-
-  var ee = new EventEmitter();
-  ee.workers = workers;
-  var timer;
 
   function run() {
     log('Job started.\n');
@@ -78,15 +76,14 @@ function tileReduce(options) {
         .resume();
     } else {
       // try to get tiles from mbtiles (either specified by sourceCover or first encountered)
-      var source;
-      for (var i = 0; i < options.sources.length; i++) {
-        source = options.sources[i];
-        if (options.sources[i].mbtiles && (!options.sourceCover || options.sourceCover === source.name)) break;
+      let source;
+      for (source of options.sources) {
+        if (source.mbtiles && (!options.sourceCover || options.sourceCover === source.name)) break;
         source = null;
       }
       if (source) {
         log('Processing tile coords from "' + source.name + '" source.\n');
-        var db = new MBTiles(source.mbtiles, function(err) {
+        var db = new MBTiles(source.mbtiles, (err) => {
           if (err) throw err;
           tileStream = db.createZXYStream()
             .pipe(binarysplit('\n'))
