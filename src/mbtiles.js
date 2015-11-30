@@ -18,24 +18,24 @@ function mbTilesVT(source, ready) {
     if (err) {
       ready(err);
     } else if (info.format === 'pbf') {
-      ready(null, getVT.bind(null, db, source));
+      ready(null, getVT);
     } else {
       ready(new Error('Unsupported MBTiles format: ' + info.format));
     }
   }
-}
 
-function getVT(db, source, tile, done) {
-  db.getTile(tile[2], tile[0], tile[1], tileFetched);
+  function getVT(tile, done) {
+    db.getTile(tile[2], tile[0], tile[1], tileFetched);
 
-  function tileFetched(err, data) {
-    if (!err) zlib.unzip(data, tileUnzipped);
-    else if (err.message === 'Tile does not exist') done();
-    else done(err);
-  }
+    function tileFetched(err, data) {
+      if (!err) zlib.unzip(data, tileUnzipped);
+      else if (err.message === 'Tile does not exist') done();
+      else done(err);
+    }
 
-  function tileUnzipped(err, data) {
-    if (err) done(err);
-    done(null, parseVT(data, tile, source));
+    function tileUnzipped(err, data) {
+      if (err) done(err);
+      done(null, parseVT(data, tile, source));
+    }
   }
 }

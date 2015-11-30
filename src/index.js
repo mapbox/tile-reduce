@@ -13,18 +13,21 @@ var MBTiles = require('mbtiles');
 var through = require('through2');
 
 // Suppress max listener warnings. We need at least 1 listener per worker.
-process.stdout.setMaxListeners(0);
 process.stderr.setMaxListeners(0);
 
 function tileReduce(options) {
 
-  var workers = [];
+  var ee = new EventEmitter();
+  var workers = ee.workers = [];
   var workersReady = 0;
+  var maxWorkers = Math.min(cpus, options.maxWorkers || cpus);
+  var output = options.output || process.stdout;
   var tileStream = null;
   var tilesDone = 0;
   var tilesSent = 0;
   var pauseLimit = options.batch || 5000;
   var start = Date.now();
+  var timer;
 
   if (options.tileStream) {
     // Pass through a dummy pipe. This ensures the stream is in the proper mode.
@@ -32,14 +35,14 @@ function tileReduce(options) {
     // https://github.com/substack/stream-handbook#classic-readable-streams
     options.tileStream = options.tileStream.pipe(through.obj());
   }
-  var maxWorkers = Math.min(cpus, options.maxWorkers || cpus);
+
   log('Starting up ' + maxWorkers + ' workers... ');
 
-  if (options.output) options.output.setMaxListeners(0);
+  if (output) output.setMaxListeners(0);
 
   for (var i = 0; i < maxWorkers; i++) {
     var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
-    worker.stdout.pipe(binarysplit('\x1e')).pipe(options.output || process.stdout);
+    worker.stdout.pipe(binarysplit('\x1e')).pipe(output);
     worker.stderr.pipe(process.stderr);
     worker.on('message', handleMessage);
     workers.push(worker);
@@ -49,10 +52,6 @@ function tileReduce(options) {
     if (message.reduce) reduce(message.value, message.tile);
     else if (message.ready && ++workersReady === workers.length) run();
   }
-
-  var ee = new EventEmitter();
-  ee.workers = workers;
-  var timer;
 
   function run() {
     log('Job started.\n');
