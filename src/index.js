@@ -107,6 +107,7 @@ function tileReduce(options) {
 
   function streamEnded() {
     ended = true;
+    if (tilesDone === tilesSent) shutdown();
   }
 
   function handleTile(tile) {
