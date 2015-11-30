@@ -4,7 +4,7 @@ module.exports = tileReduce;
 
 var EventEmitter = require('events').EventEmitter;
 var cpus = require('os').cpus().length;
-var fork = require('child_process').fork;
+var child_process = require('child_process');
 var path = require('path');
 var binarysplit = require('binary-split');
 var cover = require('./cover');
@@ -41,7 +41,10 @@ function tileReduce(options) {
   if (output) output.setMaxListeners(0);
 
   for (var i = 0; i < maxWorkers; i++) {
-    var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
+    //var worker = child_process.fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources)], {silent: true});
+    var worker = child_process.spawn('python', [options.map, JSON.stringify(options.sources)], {
+      stdio:['pipe', 'pipe', 'pipe', 'ipc']
+    });
     worker.stdout.pipe(binarysplit('\x1e')).pipe(output);
     worker.stderr.pipe(process.stderr);
     worker.on('message', handleMessage);
