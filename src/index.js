@@ -41,10 +41,10 @@ function tileReduce(options) {
   if (output) output.setMaxListeners(0);
 
   for (var i = 0; i < maxWorkers; i++) {
-    var workerArgs = [options.map, JSON.stringify(options.sources)]
+    var workerArgs = [options.map, JSON.stringify(options.sources)];
     var worker;
     if (options.workerCommand) worker = child_process.spawn(options.workerCommand, workerArgs, {
-        stdio:['pipe', 'pipe', 'pipe', 'ipc']
+      stdio: ['pipe', 'pipe', 'pipe', 'ipc']
     });
     else worker = child_process.fork(path.join(__dirname, 'worker.js'), workerArgs, {silent: true});
     worker.stdout.pipe(binarysplit('\x1e')).pipe(output);
