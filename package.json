@@ -15,7 +15,7 @@
     "type": "git",
     "url": "https://github.com/mapbox/tile-reduce.git"
   },
-  "author": "",
+  "author": "morganherlocker",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/mapbox/tile-reduce/issues"
