@@ -99,7 +99,7 @@ tilereduce({
 })
 ```
 
-#### mbtiles
+#### MBTiles
 
 ```js
 sources: [
@@ -111,7 +111,7 @@ sources: [
 ]
 ```
 
-[Mbtiles](https://github.com/mapbox/mbtiles-spec) work well for optimizing tasks that request many tiles, since the data is stored on disk. Create your own mbtiles from vector data using [tippecanoe](https://github.com/mapbox/tippecanoe), or use [OSM QA Tiles](http://osmlab.github.io/osm-qa-tiles/), a continuously updated mbtiles representation of OpenStreetMap.
+[MBTiles](https://github.com/mapbox/mbtiles-spec) work well for optimizing tasks that request many tiles, since the data is stored on disk. Create your own MBTiles from vector data using [tippecanoe](https://github.com/mapbox/tippecanoe), or use [OSM QA Tiles](http://osmlab.github.io/osm-qa-tiles/), a continuously updated MBTiles representation of OpenStreetMap.
 
 #### URL
 
@@ -124,6 +124,20 @@ sources: [
     url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf',
     layers: ['roads'],
     maxrate: 10
+  }
+]
+```
+
+#### raw
+
+By default, sources will be automatically converted from their raw Vector Tile representation to GeoJSON. If you set `raw: true` in an MBTiles or URL source, the raw Vector Tile data will be provided, allowing you to lazily parse features as needed. This is useful in some situations for maximizing performance.
+
+```js
+sources: [
+  {
+    name: 'streets',
+    url: 'https://b.tiles.mapbox.com/v4/mapbox.mapbox-streets-v6/{z}/{x}/{y}.vector.pbf',
+    raw: true
   }
 ]
 ```
@@ -194,7 +208,7 @@ tilereduce({
 
 #### Source Cover
 
-When using mbtiles sources, a list of tiles to process can be automatically retrieved from the source metadata
+When using MBTiles sources, a list of tiles to process can be automatically retrieved from the source metadata
 
 ```js
 tilereduce({
