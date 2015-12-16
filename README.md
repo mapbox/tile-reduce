@@ -130,7 +130,7 @@ sources: [
 
 #### raw
 
-By default, sources will be automatically converted from their raw Vector Tile representation to GeoJSON. If you set `raw: true` in an MBTiles or URL source, the raw Vector Tile data will be provided, allowing you to lazily parse features as needed. This is useful in some situations for maximizing performance.
+By default, sources will be automatically converted from their raw Vector Tile representation to GeoJSON. If you set `raw: true` in an MBTiles or URL source, the [raw Vector Tile data](https://github.com/mapbox/vector-tile-js) will be provided, allowing you to lazily parse features as needed. This is useful in some situations for maximizing performance.
 
 ```js
 sources: [
