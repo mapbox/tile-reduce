@@ -274,6 +274,11 @@ tilereduce({/* ... */})
 });
 ```
 
+## Processor Examples
+
+- [osm-coverage](https://github.com/mapbox/osm-coverage) - a processor for computing statistics about [OpenStreetMap](http://www.openstreetmap.org/) coverage across countries.
+
+- [osm-sidewalker](https://github.com/mapbox/osm-sidewalker) - a processor for detecting potentially untagged sidewalks in [OpenStreetMap](http://www.openstreetmap.org/).
 
 ## Development
 
