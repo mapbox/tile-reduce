@@ -85,6 +85,21 @@ tilereduce({
 })
 ```
 
+#### mapOptions
+
+Passes through arbitrary options to workers. Options are made available to map scripts as `global.mapOptions`
+
+```js
+tilereduce({
+	mapOptions: {
+		bufferSize: 4
+	}
+	// ...
+})
+```
+
+
+
 ---
 ### Specifying Sources
 
