@@ -12,7 +12,6 @@ var sources = [
 
 var mapPath = path.join(__dirname, 'fixtures/count.js');
 
-
 test('workers - 1 per cpu default', function(t) {
   tileReduce({
     zoom: 15,
@@ -47,7 +46,6 @@ test('workers - maxWorker limit is enforced', function(t) {
 });
 
 test('workers - maxWorker limit can\'t exceed CPUs', function(t) {
-
   tileReduce({
     zoom: 15,
     map: mapPath,
@@ -60,6 +58,33 @@ test('workers - maxWorker limit can\'t exceed CPUs', function(t) {
     t.equal(this.workers.length, maxCpus, 'Workers can\'t exceed CPUs');
   })
   .on('end', function() {
+    t.end();
+  });
+});
+
+test('workers - have access to mapOptions', function(t) {
+  var mapOpts = {
+    option1: true,
+    option2: 5
+  };
+  var reduceCount = 0;
+
+  tileReduce({
+    zoom: 15,
+    tiles: [
+      [5282, 12755, 15]
+    ],
+    sources: sources,
+    mapOptions: mapOpts,
+    map: path.join(__dirname, 'fixtures/mapOptions.js'),
+    log: false
+  })
+  .on('reduce', function(result) {
+    reduceCount++;
+    t.deepEqual(mapOpts, result, 'Worker mapOptions are the same as input options');
+  })
+  .on('end', function() {
+    t.equal(reduceCount, 1, 'One tile reduced');
     t.end();
   });
 });
