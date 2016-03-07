@@ -1,5 +1,5 @@
 'use strict';
 
-module.exports = function(data, tile, writeData, done) {
+module.exports = function(data, tile, mapOptions, writeData, done) {
   done(null, 1);
 };

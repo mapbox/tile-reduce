@@ -4,7 +4,7 @@ var queue = require('queue-async');
 var q = queue();
 var sources = [];
 
-global.mapOptions = JSON.parse(process.argv[4]);
+var mapOptions = JSON.parse(process.argv[4]);
 var map = require(process.argv[2]);
 
 JSON.parse(process.argv[3]).forEach(function(source) {
@@ -49,7 +49,7 @@ process.on('message', function(tile) {
       process.send({reduce: true, value: value, tile: tile});
     }
 
-    map(data, tile, write, gotResults);
+    map(data, tile, mapOptions, write, gotResults);
   }
 });
 
