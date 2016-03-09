@@ -3,6 +3,7 @@
 var queue = require('queue-async');
 var q = queue();
 var sources = [];
+var tilesQueue = queue(1);
 
 global.mapOptions = JSON.parse(process.argv[4]);
 var map = require(process.argv[2]);
@@ -26,7 +27,7 @@ q.awaitAll(function(err, results) {
   process.send({ready: true});
 });
 
-process.on('message', function(tile) {
+function processTile(tile, callback) {
   var q = queue();
 
   for (var i = 0; i < sources.length; i++) {
@@ -41,16 +42,28 @@ process.on('message', function(tile) {
     var data = {};
     for (var i = 0; i < results.length; i++) {
       data[sources[i].name] = results[i];
-      if (!results[i]) return process.send({reduce: true});
+      if (!results[i]) {
+        callback(null);
+        process.send({reduce: true});
+        return;
+      }
     }
 
     function gotResults(err, value) {
       if (err) throw err;
-      process.send({reduce: true, value: value, tile: tile});
+      process.send({reduce: true, value: value, tile: tile}, undefined, function() {
+        callback(null);
+      });
+      if (process.versions.node.split('.')[0] < 4) // node/iojs prior to v4.0.0 don't have the callback to process.send above (instead the call is syncronous)
+        callback(null);
     }
 
     map(data, tile, write, gotResults);
   }
+}
+
+process.on('message', function(tile) {
+  tilesQueue.defer(processTile, tile);
 });
 
 function write(data, cb) {
