@@ -50,10 +50,23 @@ function processTile(tile, callback) {
       }
     }
 
+    var writeQueue = queue(1);
+
+    function write(data) {
+      var dataStr = data;
+      if (typeof data !== 'string') dataStr = JSON.stringify(data);
+      dataStr += '\x1e';
+
+      writeQueue.defer(process.stdout.write.bind(process.stdout), dataStr);
+      //process.stdout.write(((typeof data === 'string') ? data : JSON.stringify(data)) + '\x1e', cb);
+    }
+
     function gotResults(err, value) {
       if (err) throw err;
-      process.send({reduce: true, value: value, tile: tile}, null, callback);
-      if (isOldNode) callback(); // process.send is async since Node 4.0
+      writeQueue.awaitAll(function() {
+        process.send({reduce: true, value: value, tile: tile}, null, callback);
+        if (isOldNode) callback(); // process.send is async since Node 4.0
+      });
     }
 
     map(data, tile, write, gotResults);
@@ -64,6 +77,3 @@ process.on('message', function(tile) {
   tilesQueue.defer(processTile, tile);
 });
 
-function write(data, cb) {
-  process.stdout.write(((typeof data === 'string') ? data : JSON.stringify(data)) + '\x1e', cb);
-}
