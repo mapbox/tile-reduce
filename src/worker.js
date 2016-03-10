@@ -53,12 +53,7 @@ function processTile(tile, callback) {
     var writeQueue = queue(1);
 
     function write(data) {
-      var dataStr = data;
-      if (typeof data !== 'string') dataStr = JSON.stringify(data);
-      dataStr += '\x1e';
-
-      writeQueue.defer(process.stdout.write.bind(process.stdout), dataStr);
-      //process.stdout.write(((typeof data === 'string') ? data : JSON.stringify(data)) + '\x1e', cb);
+      writeQueue.defer(writeStdout, (typeof data !== 'string' ? JSON.stringify(data) : data) + '\x1e');
     }
 
     function gotResults(err, value) {
@@ -71,6 +66,10 @@ function processTile(tile, callback) {
 
     map(data, tile, write, gotResults);
   }
+}
+
+function writeStdout(str, cb) {
+  process.stdout.write(str, cb);
 }
 
 process.on('message', function(tile) {
