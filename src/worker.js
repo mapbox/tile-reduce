@@ -67,5 +67,5 @@ process.on('message', function(tile) {
 });
 
 function write(data, cb) {
-  process.stdout.write((typeof data === 'string') ? data : JSON.stringify(data) + '\x1e', cb);
+  process.stdout.write(((typeof data === 'string') ? data : JSON.stringify(data)) + '\x1e', cb);
 }
