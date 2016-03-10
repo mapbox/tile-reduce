@@ -4,6 +4,7 @@ var queue = require('queue-async');
 var q = queue();
 var sources = [];
 var tilesQueue = queue(1);
+var isOldNode = process.versions.node.split('.')[0] < 4;
 
 global.mapOptions = JSON.parse(process.argv[4]);
 var map = require(process.argv[2]);
@@ -43,7 +44,7 @@ function processTile(tile, callback) {
     for (var i = 0; i < results.length; i++) {
       data[sources[i].name] = results[i];
       if (!results[i]) {
-        callback(null);
+        callback();
         process.send({reduce: true});
         return;
       }
@@ -51,11 +52,8 @@ function processTile(tile, callback) {
 
     function gotResults(err, value) {
       if (err) throw err;
-      process.send({reduce: true, value: value, tile: tile}, undefined, function() {
-        callback(null);
-      });
-      if (process.versions.node.split('.')[0] < 4) // node/iojs prior to v4.0.0 don't have the callback to process.send above (instead the call is syncronous)
-        callback(null);
+      process.send({reduce: true, value: value, tile: tile}, null, callback);
+      if (isOldNode) callback(); // process.send is async since Node 4.0
     }
 
     map(data, tile, write, gotResults);
