@@ -1,7 +1,17 @@
-CHANGELOG
----
+# Changelog
 
-##3.0.0
+## 3.0.3
+
+- fix a big memory leak that happened when writing a big amount of JSON data out
+- add `mapOptions` option that passes global options to workers
+
+## 3.0.2
+
+- add `maxWorkers` option
+- fix sporadical failures on big MBTiles files
+- fix MBTiles support on Windows
+
+## 3.0.0
 
 - move Vector Tile parsing to workers (major performance improvements)
 - overhaul tests around new architecture (high test coverage)
