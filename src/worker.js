@@ -17,6 +17,7 @@ function loadSource(source, done) {
   var loaded = {name: source.name};
   sources.push(loaded);
 
+  /*eslint global-require: 0 */
   if (source.mbtiles) require('./mbtiles')(source, done);
   else if (source.url) require('./remote')(source, done);
   else throw new Error('Unknown source type');

@@ -36,10 +36,10 @@
     "vector-tile": "^1.1.3"
   },
   "devDependencies": {
-    "eslint": "^1.10.2",
-    "eslint-config-mourner": "^1.0.1",
+    "eslint": "^2.4.0",
+    "eslint-config-mourner": "^2.0.0",
     "split": "^1.0.0",
-    "tap": "^2.3.1"
+    "tap": "^5.7.0"
   },
   "eslintConfig": {
     "extends": "mourner",

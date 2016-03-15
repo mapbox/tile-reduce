@@ -103,7 +103,7 @@ test('remote - raw invalid url - no server', function(t) {
 });
 
 test('remote - throttle', function(t) {
-  var url = url = 'https://b.tiles.mapbox.com/v4/morganherlocker.4c81vjdd/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
+  var url = 'https://b.tiles.mapbox.com/v4/morganherlocker.4c81vjdd/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
   var maxrate = 5;
   var tile = [5276, 12757, 15];
   var source = {name: 'osm', url: url, maxrate: maxrate};
