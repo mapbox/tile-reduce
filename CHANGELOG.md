@@ -1,8 +1,11 @@
 # Changelog
 
-## 3.0.3
+## 3.1.1
 
 - fix a big memory leak that happened when writing a big amount of JSON data out
+
+## 3.1.0
+
 - add `mapOptions` option that passes global options to workers
 
 ## 3.0.2
