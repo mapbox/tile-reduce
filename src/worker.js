@@ -52,16 +52,33 @@ function processTile(tile, callback) {
     }
 
     var writeQueue = queue(1);
+    var writeBuffer = [];
+
+    function prepWriteBuffer() {
+      return writeBuffer.splice(0).map(function(ele) {
+        return (typeof ele !== 'string' ? JSON.stringify(ele) : ele) + '\x1e';
+      }).join('');
+    }
 
     function write(data) {
-      writeQueue.defer(writeStdout, (typeof data !== 'string' ? JSON.stringify(data) : data) + '\x1e');
+      writeBuffer.push(data);
+
+      if (writeBuffer.length > 100) {
+        writeQueue.defer(writeStdout, prepWriteBuffer());
+      }
     }
 
     function gotResults(err, value) {
       if (err) throw err;
-      writeQueue.awaitAll(function() {
+
+      function sendResponse() {
         process.send({reduce: true, value: value, tile: tile}, null, callback);
         if (isOldNode) callback(); // process.send is async since Node 4.0
+      }
+
+      writeQueue.awaitAll(function() {
+        if (writeBuffer.length > 0) writeStdout(prepWriteBuffer(), sendResponse);
+        else sendResponse();
       });
     }
 
