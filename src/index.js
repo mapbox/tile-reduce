@@ -36,10 +36,10 @@ function tileReduce(options) {
     new vm.Script(fs.readFileSync(options.map), {filename: options.map}); // eslint-disable-line
   } catch (e) {
     if (e instanceof SyntaxError) {
-      console.error('tile-reduce found a syntax error in your map script: ' + options.map + '\n');
+      e.message = 'tile-reduce found a syntax error in your map script: ' + options.map + '\n\n' + e.message;
       throw e;
     } else if (e instanceof Error) {
-      console.error('tile-reduce was unable to find or require your map script: ' + options.map + '\n');
+      e.message = 'tile-reduce was unable to find or require your map script: ' + options.map + '\n\n' + e.message;
       throw e;
     }
   }
