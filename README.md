@@ -31,7 +31,7 @@ The reduce script serves both to initialize TileReduce with job options, and to 
 
 ### Basic Options
 
-#### zoom
+#### zoom (required)
 
 `zoom` specifies the zoom level of tiles to retrieve from each source.
 
@@ -42,7 +42,7 @@ tilereduce({
 })
 ```
 
-#### map
+#### map (required)
 
 Path to the map script, which will be executed against each tile
 
@@ -98,10 +98,7 @@ tilereduce({
 })
 ```
 
-
-
----
-### Specifying Sources
+### Specifying Sources (required)
 
 Sources are specified as an array in the `sources` option:
 
@@ -114,16 +111,18 @@ tilereduce({
 })
 ```
 
-#### MBTiles
+#### MBTiles sources:
 
 ```js
-sources: [
-  {
-    name: 'osmdata',
-    mbtiles: __dirname+'/latest.planet.mbtiles',
-    layers: ['osm']
-  }
-]
+tilereduce({
+    sources: [
+      {
+        name: 'osmdata',
+        mbtiles: __dirname+'/latest.planet.mbtiles',
+        layers: ['osm']
+      }
+    ]
+})
 ```
 
 [MBTiles](https://github.com/mapbox/mbtiles-spec) work well for optimizing tasks that request many tiles, since the data is stored on disk. Create your own MBTiles from vector data using [tippecanoe](https://github.com/mapbox/tippecanoe), or use [OSM QA Tiles](http://osmlab.github.io/osm-qa-tiles/), a continuously updated MBTiles representation of OpenStreetMap.
