@@ -4,6 +4,8 @@ module.exports = tileReduce;
 
 var EventEmitter = require('events').EventEmitter;
 var cpus = require('os').cpus().length;
+var vm = require('vm');
+var fs = require('fs');
 var fork = require('child_process').fork;
 var path = require('path');
 var binarysplit = require('binary-split');
@@ -28,6 +30,19 @@ function tileReduce(options) {
   var pauseLimit = options.batch || 5000;
   var start = Date.now();
   var timer;
+
+  // Validate syntax in the map script to fail faster
+  try {
+    new vm.Script(fs.readFileSync(options.map), {filename: options.map}); // eslint-disable-line
+  } catch (e) {
+    if (e instanceof SyntaxError) {
+      console.error('tile-reduce found a syntax error in your map script: ' + options.map + '\n');
+      throw e;
+    } else if (e instanceof Error) {
+      console.error('tile-reduce was unable to find or require your map script: ' + options.map + '\n');
+      throw e;
+    }
+  }
 
   if (options.tileStream) {
     // Pass through a dummy pipe. This ensures the stream is in the proper mode.
