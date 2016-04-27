@@ -98,6 +98,13 @@ tilereduce({
 })
 ```
 
+```js
+// map.js
+module.exports = function (sources, tile, write, done) {
+  global.mapOptions.bufferSize; // = 4
+};
+```
+
 ### Specifying Sources (required)
 
 Sources are specified as an array in the `sources` option:
