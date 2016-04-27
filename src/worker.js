@@ -6,10 +6,12 @@ var sources = [];
 var tilesQueue = queue(1);
 var isOldNode = process.versions.node.split('.')[0] < 4;
 
-global.mapOptions = JSON.parse(process.argv[4]);
-var map = require(process.argv[2]);
+var options = JSON.parse(process.argv[2]);
+global.mapOptions = options.mapOptions;
 
-JSON.parse(process.argv[3]).forEach(function(source) {
+var map = require(options.map);
+
+options.sources.forEach(function(source) {
   q.defer(loadSource, source);
 });
 
@@ -42,13 +44,19 @@ function processTile(tile, callback) {
     if (err) throw err;
 
     var data = {};
+    var validSources = 0;
     for (var i = 0; i < results.length; i++) {
-      data[sources[i].name] = results[i];
-      if (!results[i]) {
-        callback();
-        process.send({reduce: true});
-        return;
-      }
+      data[sources[i].name] = results[i] || {};
+      if (results[i]) validSources++;
+    }
+
+    if (
+      (validSources < sources.length && options.requireData === 'all') ||
+      (validSources === 0 && options.requireData === 'any')
+    ) {
+      callback();
+      process.send({reduce: true});
+      return;
     }
 
     var writeQueue = queue(1);

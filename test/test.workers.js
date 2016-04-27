@@ -88,3 +88,80 @@ test('workers - have access to mapOptions', function(t) {
     t.end();
   });
 });
+
+
+test('workers -- requireData: all processes data that exists in both sources', function(t) {
+  var tilect = 0;
+  tileReduce({
+    zoom: 15,
+    map: mapPath,
+    sources: sources,
+    bbox: [
+      -122.2174072265625,
+      36.89170307169378,
+      -121.81640624999999,
+      37.13514018576745
+    ],
+    log: false,
+    maxWorkers: 1,
+    requireData: 'all'
+  })
+  .on('reduce', function() {
+    tilect++;
+  })
+  .on('end', function() {
+    t.equal(tilect, 355);
+    t.end();
+  });
+});
+
+test('workers -- requireData: any processes data that exists in one sources', function(t) {
+  var tilect = 0;
+  tileReduce({
+    zoom: 15,
+    map: mapPath,
+    sources: sources,
+    bbox: [
+      -122.2174072265625,
+      36.89170307169378,
+      -121.81640624999999,
+      37.13514018576745
+    ],
+    log: false,
+    maxWorkers: 1,
+    requireData: 'any'
+  })
+  .on('reduce', function() {
+    tilect++;
+  })
+  .on('end', function() {
+    t.equal(tilect, 418);
+    t.end();
+  });
+});
+
+test('workers -- requireData: none processes data even if no sources for the tile', function(t) {
+  var tilect = 0;
+  tileReduce({
+    zoom: 15,
+    map: mapPath,
+    sources: sources,
+    bbox: [
+      -122.2174072265625,
+      36.89170307169378,
+      -121.81640624999999,
+      37.13514018576745
+    ],
+    log: false,
+    maxWorkers: 1,
+    requireData: 'none'
+  })
+  .on('reduce', function() {
+    tilect++;
+  })
+  .on('end', function() {
+    t.equal(tilect, 1102);
+    t.end();
+  });
+});
+

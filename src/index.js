@@ -54,10 +54,19 @@ function tileReduce(options) {
   log('Starting up ' + maxWorkers + ' workers... ');
 
   if (output) output.setMaxListeners(0);
-  var mapOptions = options.mapOptions || {};
+
+  // options relevant to spawning and configuring each worker instance.
+  // We can't just stringify the entire `options` object because it may
+  // have keys that are streams / objects (such as `output` or `tileStream`)
+  var workerOptions = {
+    map: options.map,
+    sources: options.sources,
+    mapOptions: options.mapOptions || {},
+    requireData: options.requireData || 'all'
+  };
 
   for (var i = 0; i < maxWorkers; i++) {
-    var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources), JSON.stringify(mapOptions)], {silent: true});
+    var worker = fork(path.join(__dirname, 'worker.js'), [JSON.stringify(workerOptions)], {silent: true});
     worker.stdout.pipe(binarysplit('\x1e')).pipe(output);
     worker.stderr.pipe(process.stderr);
     worker.on('message', handleMessage);
