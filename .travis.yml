@@ -1,6 +1,15 @@
 language: node_js
+sudo: false
 node_js:
-  - 0.10
   - 0.12
   - 4
+  - 5
   - stable
+addons:
+  apt: 
+    sources: [ 'ubuntu-toolchain-r-test' ]
+    packages: 
+      - gcc-5
+      - g++-5
+cache:
+  - apt
