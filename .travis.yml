@@ -1,5 +1,7 @@
 language: node_js
 sudo: false
+env:
+  - CXX=g++-5
 node_js:
   - 0.12
   - 4
@@ -9,7 +11,6 @@ addons:
   apt: 
     sources: [ 'ubuntu-toolchain-r-test' ]
     packages: 
-      - gcc-5
       - g++-5
-cache:
+cace:
   - apt
