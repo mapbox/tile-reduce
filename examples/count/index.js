@@ -4,7 +4,7 @@ var tileReduce = require('../../src');
 var path = require('path');
 
 var numFeatures = 0;
-m
+
 tileReduce({
   bbox: [-122.05862045288086, 36.93768132842635, -121.97296142578124, 37.00378647456494],
   zoom: 12,
