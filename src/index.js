@@ -30,6 +30,10 @@ function tileReduce(options) {
   var pauseLimit = options.batch || 5000;
   var start = Date.now();
   var timer;
+  var adapters = {
+    'mbtiles': path.join(__dirname, 'adapters/mbtiles2'),
+    'url': path.join(__dirname, 'adapters/remote2')
+  };
 
   // Validate syntax in the map script to fail faster
   try {
