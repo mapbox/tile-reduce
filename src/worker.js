@@ -7,27 +7,23 @@ var sources = [];
 var tilesQueue = queue(1);
 var isOldNode = process.versions.node.split('.')[0] < 4;
 
-// todo: parse from startup params
-var adapters = {
-  'mbtiles': path.join(__dirname, 'adapters/mbtiles'),
-  'remote': path.join(__dirname, 'adapters/remote'),
-};
-
+var adapters = JSON.parse(process.argv[4]);
 for (var key in adapters) {
   // eslint-disable-line global-require
   adapters[key] = require(adapters[key]);
 }
 
-global.mapOptions = JSON.parse(process.argv[4]);
+global.mapOptions = JSON.parse(process.argv[5]);
 var map = require(process.argv[2]);
 
 JSON.parse(process.argv[3]).forEach(function(source) {
   q.defer(loadSource, source);
 });
 
+
 function loadSource(source, done) {
   /*eslint global-require: 0 */
-  if (!adapters[source.type]) throw new Error('Unknow source type');
+  if (!adapters[source.type]) throw new Error('Unknown source type ' + source.type);
 
   var adapter = new adapters[source.type](source, done);
   adapter.name = source.name;
