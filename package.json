@@ -32,6 +32,7 @@
     "through2": "^2.0.0",
     "tile-cover": "^3.0.1",
     "tilebelt": "^1.0.1",
+    "tilelive": "^5.12.2",
     "turf-bbox-polygon": "^1.0.1",
     "vector-tile": "^1.1.3"
   },

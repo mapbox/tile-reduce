@@ -1,4 +1,5 @@
 node_modules
+data/*
 *.log
 coverage
 .nyc_output

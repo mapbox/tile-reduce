@@ -30,6 +30,10 @@ function tileReduce(options) {
   var pauseLimit = options.batch || 5000;
   var start = Date.now();
   var timer;
+  var adapters = {
+    'mbtiles': path.join(__dirname, 'adapters/mbtiles'),
+    'remote': path.join(__dirname, 'adapters/remote')
+  };
 
   // Validate syntax in the map script to fail faster
   try {
@@ -57,7 +61,7 @@ function tileReduce(options) {
   var mapOptions = options.mapOptions || {};
 
   for (var i = 0; i < maxWorkers; i++) {
-    var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources), JSON.stringify(mapOptions)], {silent: true});
+    var worker = fork(path.join(__dirname, 'worker.js'), [options.map, JSON.stringify(options.sources), JSON.stringify(adapters), JSON.stringify(mapOptions)], {silent: true});
     worker.stdout.pipe(binarysplit('\x1e')).pipe(output);
     worker.stderr.pipe(process.stderr);
     worker.on('message', handleMessage);
