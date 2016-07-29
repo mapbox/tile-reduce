@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/mapbox/tile-reduce",
   "dependencies": {
+    "benchmark": "^1.0.0",
     "binary-split": "^1.0.0",
     "function-rate-limit": "^1.0.1",
     "mbtiles": "^0.8.2",
