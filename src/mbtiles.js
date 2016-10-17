@@ -17,7 +17,7 @@ function mbTilesVT(source, ready) {
   function infoReady(err, info) {
     if (err) {
       ready(err);
-    } else if (info.format === 'pbf') {
+    } else if (info.format === 'pbf' || info.format === 'application/vnd.mapbox-vector-tile') {
       ready(null, getVT);
     } else {
       ready(new Error('Unsupported MBTiles format: ' + info.format));
