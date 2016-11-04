@@ -7,8 +7,9 @@
     "test": "test"
   },
   "scripts": {
-    "test": "eslint src test examples/*/*.js && tap -R spec test/test.*.js",
+    "test": "npm run lint && tap -R spec test/test.*.js && npm run test:types",
     "cover": "tap test/test.*.js --cov --coverage-report=lcov",
+    "test:types": "tsc -p types",
     "lint": "eslint src test examples/*/*.js"
   },
   "repository": {
@@ -39,8 +40,10 @@
     "eslint": "^2.4.0",
     "eslint-config-mourner": "^2.0.0",
     "split": "^1.0.0",
-    "tap": "^5.7.0"
+    "tap": "^5.7.0",
+    "typescript": "^2.0.7"
   },
+  "types": "types/index.d.ts",
   "eslintConfig": {
     "extends": "mourner",
     "rules": {
