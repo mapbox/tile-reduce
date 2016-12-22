@@ -7,7 +7,7 @@ TileReduce is a geoprocessing library that implements [MapReduce](http://en.wiki
 ## Install
 
 ```sh
-npm install tile-reduce
+npm install @mapbox/tile-reduce
 ```
 
 ## Usage
