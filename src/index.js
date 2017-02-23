@@ -158,7 +158,7 @@ function tileReduce(options) {
   }
 
   function shutdown() {
-    while (workers.length) workers.pop().kill();
+    while (workers.length) workers.pop().kill('SIGHUP');
 
     clearTimeout(timer);
     updateStatus();
