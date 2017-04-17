@@ -64,6 +64,26 @@ test('remote - sparse GeoJSON parse', function(t) {
   });
 });
 
+test('remote - raw with layers', function(t) {
+  var osmUrl = 'https://b.tiles.mapbox.com/v4/morganherlocker.3vsvfjjw/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
+  var source = {
+    name: 'osm',
+    url: osmUrl,
+    layers: ['buildings'],
+    raw: true
+  };
+  remote(source, function(err, getTile) {
+    t.notOk(err, 'remote initialized without error');
+    getTile([5276, 12757, 15], function(err, layers) {
+      t.notOk(err, 'remote unpacked without error');
+      t.ok(layers, 'layers parsed from remote');
+      t.equal(layers.buildings.length, 264, 'layers have correct number of buildings');
+      t.notOk(layers.roads);
+      t.end();
+    });
+  });
+});
+
 test('remote - init', function(t) {
   var osmUrl = 'https://b.tiles.mapbox.com/v4/morganherlocker.3vsvfjjw/{z}/{x}/{y}.vector.pbf?access_token=pk.eyJ1IjoibW9yZ2FuaGVybG9ja2VyIiwiYSI6Ii1zLU4xOWMifQ.FubD68OEerk74AYCLduMZQ';
   var source = {name: 'osm', url: osmUrl};
