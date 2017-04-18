@@ -6,7 +6,7 @@ var sources = [];
 var tilesQueue = queue(1);
 var isOldNode = process.versions.node.split('.')[0] < 4;
 
-global.mapOptions = JSON.parse(process.argv[4]);
+var mapOptions = JSON.parse(process.argv[4]);
 var map = require(process.argv[2]);
 
 JSON.parse(process.argv[3]).forEach(function(source) {
@@ -65,7 +65,7 @@ function processTile(tile, callback) {
       });
     }
 
-    map(data, tile, write, gotResults);
+    map(data, tile, mapOptions, write, gotResults);
   }
 }
 

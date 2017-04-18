@@ -52,6 +52,18 @@ tilereduce({
 	// ...
 })
 ```
+
+A map script should export a function that implements the following interface:
+
+```js
+module.exports = function(data, tile, mapOptions, writeData, done) {
+  // call done when the script is done
+  // the first parameter should be any errors
+  // the second parameter should be a value to be reduced by the main thread
+  done(null, null);
+};
+```
+
 #### maxWorkers
 
 By default, TileReduce creates one worker process per CPU. `maxWorkers` may be used to limit the number of workers created
