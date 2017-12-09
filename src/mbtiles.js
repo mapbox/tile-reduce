@@ -1,7 +1,7 @@
 'use strict';
 
 var zlib = require('zlib');
-var MBTiles = require('mbtiles');
+var MBTiles = require('@mapbox/mbtiles');
 var parseVT = require('./vt');
 
 module.exports = mbTilesVT;

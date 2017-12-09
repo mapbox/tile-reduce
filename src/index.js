@@ -11,7 +11,7 @@ var path = require('path');
 var binarysplit = require('binary-split');
 var cover = require('./cover');
 var streamArray = require('stream-array');
-var MBTiles = require('mbtiles');
+var MBTiles = require('@mapbox/mbtiles');
 var through = require('through2');
 
 // Suppress max listener warnings. We need at least 1 listener per worker.

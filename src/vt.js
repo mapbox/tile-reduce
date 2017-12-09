@@ -1,6 +1,6 @@
 'use strict';
 
-var VectorTile = require('vector-tile').VectorTile;
+var VectorTile = require('@mapbox/vector-tile').VectorTile;
 var Pbf = require('pbf');
 
 module.exports = parseData;
