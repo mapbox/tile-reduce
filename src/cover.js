@@ -2,7 +2,7 @@
 
 module.exports = cover;
 
-var tilecover = require('tile-cover');
+var tilecover = require('@mapbox/tile-cover');
 var bboxPolygon = require('@turf/bbox-polygon');
 
 function cover(options) {
