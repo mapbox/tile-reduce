@@ -3,7 +3,7 @@
 module.exports = cover;
 
 var tilecover = require('@mapbox/tile-cover');
-var bboxPolygon = require('@turf/bbox-polygon');
+var bboxPolygon = require('@turf/bbox-polygon').default;
 
 function cover(options) {
   if (Array.isArray(options.tiles)) return zoomTiles(options.tiles, options.zoom);
