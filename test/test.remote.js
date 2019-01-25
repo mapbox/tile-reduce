@@ -76,7 +76,7 @@ test('remote - init', function(t) {
 });
 
 test('remote - raw invalid url - 401', function(t) {
-  var badUrl = 'https://b.tiles.mapbox.com/v4/morganherlocker.3vsvfjjw/{z}/{x}.vector.pbf';
+  var badUrl = 'https://b.tiles.mapbox.com/v4/morganherlocker.3vsvfjjw/{z}/{x}.awesome.pbf';
   var source = {name: 'osm', url: badUrl};
   remote(source, function(err, getTile) {
     t.notOk(err, 'remote initialized without error');
