@@ -7,10 +7,16 @@
     "test": "test"
   },
   "scripts": {
-    "test": "eslint src test examples/*/*.js && tap -R spec test/test.*.js",
+    "lint": "eslint src test examples/*/*.js",
+    "pretest": "npm run lint",
+    "test": "tap -R spec test/test.*.js",
     "cover": "tap test/test.*.js --cov --coverage-report=lcov",
-    "lint": "eslint src test examples/*/*.js"
+    "prepublishOnly": "npm run test"
   },
+  "files": [
+    "src",
+    "examples"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/mapbox/tile-reduce.git"
