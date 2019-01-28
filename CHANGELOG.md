@@ -1,5 +1,16 @@
 # Changelog
 
+## 3.3.0
+
+- Kill worker processes with SIGHUP instead of SIGTERM so that they'd have a chance to clean up things.
+- Update dependencies so that tile-reduce installs cleanly with modern versions of Node.
+
+## 3.2.0
+
+- Better error handling.
+- Support MBTiles with application/vnd.mapbox-vector-tile MIME-type.
+- Updated dependencies.
+
 ## 3.1.1
 
 - fix a big memory leak that happened when writing a big amount of JSON data out
