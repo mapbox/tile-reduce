@@ -1,4 +1,6 @@
+# use ubuntu 20.04 to get up to date python3 and node
+dist: focal
+
 language: node_js
 node_js:
-  - 4
-  - node
+  - 14
