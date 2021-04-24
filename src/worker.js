@@ -8,6 +8,7 @@ var isOldNode = process.versions.node.split('.')[0] < 4;
 
 global.mapOptions = JSON.parse(process.argv[4]);
 var map = require(process.argv[2]);
+var requireData = process.argv[5];
 
 JSON.parse(process.argv[3]).forEach(function(source) {
   q.defer(loadSource, source);
@@ -42,13 +43,23 @@ function processTile(tile, callback) {
     if (err) throw err;
 
     var data = {};
+    var hasData = false;
     for (var i = 0; i < results.length; i++) {
       data[sources[i].name] = results[i];
       if (!results[i]) {
-        callback();
-        process.send({reduce: true});
-        return;
+        if (requireData === 'all') {
+          callback();
+          process.send({reduce: true});
+          return;
+        }
+      } else {
+        hasData = true;
       }
+    }
+    if (requireData === 'any' && !hasData) {
+      callback();
+      process.send({reduce: true});
+      return;
     }
 
     var writeQueue = queue(1);
